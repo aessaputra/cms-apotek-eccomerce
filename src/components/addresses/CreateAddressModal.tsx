@@ -1,6 +1,6 @@
 'use client'
+import { AddressForm } from '@/components/forms/AddressForm'
 import { Button } from '@/components/ui/button'
-import React, { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -9,13 +9,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { AddressForm } from '@/components/forms/AddressForm'
 import { Address } from '@/payload-types'
 import { DefaultDocumentIDType } from 'payload'
+import React, { useState } from 'react'
+
+// Type for address form data that makes required fields required but allows optional fields to be undefined
+type AddressFormData = Omit<Address, 'country' | 'id' | 'updatedAt' | 'createdAt'> & { 
+  country?: string 
+}
 
 type Props = {
   addressID?: DefaultDocumentIDType
-  initialData?: Partial<Omit<Address, 'country'>> & { country?: string }
+  initialData?: Partial<AddressFormData>
   buttonText?: string
   modalTitle?: string
   callback?: (address: Partial<Address>) => void

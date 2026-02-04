@@ -1,24 +1,24 @@
 'use client'
-import React, { useCallback } from 'react'
-import { useForm } from 'react-hook-form'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useAddresses } from '@payloadcms/plugin-ecommerce/client/react'
-import { defaultCountries as supportedCountries } from '@payloadcms/plugin-ecommerce/client/react'
-import { Address, Config } from '@/payload-types'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select'
+import { Address, Config } from '@/payload-types'
+import { defaultCountries as supportedCountries, useAddresses } from '@payloadcms/plugin-ecommerce/client/react'
+import React, { useCallback } from 'react'
+import { useForm } from 'react-hook-form'
 
-import { titles } from './constants'
-import { Button } from '@/components/ui/button'
-import { deepMergeSimple } from 'payload/shared'
 import { FormError } from '@/components/forms/FormError'
 import { FormItem } from '@/components/forms/FormItem'
+import { Button } from '@/components/ui/button'
+import { deepMergeSimple } from 'payload/shared'
+import { titles } from './constants'
 
 type AddressFormValues = {
   title?: string | null
@@ -32,11 +32,17 @@ type AddressFormValues = {
   postalCode?: string | null
   country?: string | null
   phone?: string | null
+  label?: string
+  addressType?: 'shipping' | 'billing' | 'both'
+  isDefaultShipping?: boolean | null
+  isDefaultBilling?: boolean | null
+  deliveryInstructions?: string | null
+  isActive?: boolean | null
 }
 
 type Props = {
   addressID?: Config['db']['defaultIDType']
-  initialData?: Omit<Address, 'country' | 'id' | 'updatedAt' | 'createdAt'> & { country?: string }
+  initialData?: Partial<Omit<Address, 'country' | 'id' | 'updatedAt' | 'createdAt'>> & { country?: string }
   callback?: (data: Partial<Address>) => void
   /**
    * If true, the form will not submit to the API.
@@ -56,7 +62,13 @@ export const AddressForm: React.FC<Props> = ({
     formState: { errors },
     setValue,
   } = useForm<AddressFormValues>({
-    defaultValues: initialData,
+    defaultValues: {
+      ...initialData,
+      // Provide default values for required fields if not provided
+      label: initialData?.label || '',
+      addressType: initialData?.addressType || 'both',
+      isActive: initialData?.isActive !== false, // Default to true unless explicitly false
+    },
   })
 
   const { createAddress, updateAddress } = useAddresses()
@@ -217,6 +229,97 @@ export const AddressForm: React.FC<Props> = ({
             </SelectContent>
           </Select>
           {errors.country && <FormError message={errors.country.message} />}
+        </FormItem>
+
+        <FormItem>
+          <Label htmlFor="label">Address Label*</Label>
+          <Input
+            id="label"
+            placeholder="e.g., Home, Office, Mom's House"
+            {...register('label', { required: 'Address label is required.' })}
+          />
+          {errors.label && <FormError message={errors.label.message} />}
+        </FormItem>
+
+        <FormItem>
+          <Label htmlFor="addressType">Address Type*</Label>
+          <Select
+            {...register('addressType', {
+              required: 'Address type is required.',
+            })}
+            onValueChange={(value) => {
+              setValue('addressType', value as 'shipping' | 'billing' | 'both', { shouldValidate: true })
+            }}
+            required
+            defaultValue={initialData?.addressType || 'both'}
+          >
+            <SelectTrigger id="addressType" className="w-full">
+              <SelectValue placeholder="Select address type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="shipping">Shipping Only</SelectItem>
+              <SelectItem value="billing">Billing Only</SelectItem>
+              <SelectItem value="both">Both Shipping and Billing</SelectItem>
+            </SelectContent>
+          </Select>
+          {errors.addressType && <FormError message={errors.addressType.message} />}
+        </FormItem>
+
+        <div className="flex flex-col md:flex-row gap-4">
+          <FormItem>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isDefaultShipping"
+                defaultChecked={initialData?.isDefaultShipping || false}
+                {...register('isDefaultShipping')}
+                onCheckedChange={(checked: boolean) => {
+                  setValue('isDefaultShipping', checked)
+                }}
+              />
+              <Label htmlFor="isDefaultShipping">Set as default shipping address</Label>
+            </div>
+            {errors.isDefaultShipping && <FormError message={errors.isDefaultShipping.message} />}
+          </FormItem>
+
+          <FormItem>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isDefaultBilling"
+                defaultChecked={initialData?.isDefaultBilling || false}
+                {...register('isDefaultBilling')}
+                onCheckedChange={(checked: boolean) => {
+                  setValue('isDefaultBilling', checked)
+                }}
+              />
+              <Label htmlFor="isDefaultBilling">Set as default billing address</Label>
+            </div>
+            {errors.isDefaultBilling && <FormError message={errors.isDefaultBilling.message} />}
+          </FormItem>
+        </div>
+
+        <FormItem>
+          <Label htmlFor="deliveryInstructions">Delivery Instructions</Label>
+          <Input
+            id="deliveryInstructions"
+            placeholder="e.g., Leave at front door, Ring doorbell twice"
+            {...register('deliveryInstructions')}
+          />
+          {errors.deliveryInstructions && <FormError message={errors.deliveryInstructions.message} />}
+        </FormItem>
+
+        <FormItem>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="isActive"
+              defaultChecked={initialData?.isActive !== false}
+              {...register('isActive')}
+              onCheckedChange={(checked: boolean) => {
+                setValue('isActive', checked)
+              }}
+            />
+            <Label htmlFor="isActive">Address is active</Label>
+          </div>
+          {errors.isActive && <FormError message={errors.isActive.message} />}
         </FormItem>
       </div>
 

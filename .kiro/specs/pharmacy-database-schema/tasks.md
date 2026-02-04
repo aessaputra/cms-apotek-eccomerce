@@ -21,21 +21,21 @@ The approach builds upon Payload's existing collections and functionality rather
     - Add pharmacy-specific category fields if needed (controlled_substance, prescription_required)
     - _Requirements: 2.3_
 
-- [ ] 2. Enhance address management using existing addresses collection
-  - [ ] 2.1 Extend addresses collection with enhanced features
+- [x] 2. Enhance address management using existing addresses collection
+  - [x] 2.1 Extend addresses collection with enhanced features
     - Add address type field (shipping, billing, both) to existing collection
     - Add default address handling (is_default_shipping, is_default_billing)
     - Add delivery instructions field
     - Implement label field for address identification ("Home", "Office", etc.)
     - _Requirements: 1.1, 1.2, 1.6_
   
-  - [ ] 2.2 Create address management hooks
+  - [x] 2.2 Create address management hooks
     - Implement beforeChange hook to ensure only one default address per type per user
     - Create beforeDelete hook to prevent deletion of addresses referenced by orders
     - Add validation hooks for address data integrity
     - _Requirements: 1.4, 1.5_
   
-  - [ ] 2.3 Enhance address access control
+  - [x] 2.3 Enhance address access control
     - Review existing access control for addresses collection
     - Ensure users can only see their own addresses
     - Add admin access for address management

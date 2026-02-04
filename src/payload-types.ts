@@ -1049,6 +1049,30 @@ export interface Address {
     | 'SE'
     | 'CH';
   phone?: string | null;
+  /**
+   * A friendly name for this address (e.g., "Home", "Office", "Mom's House")
+   */
+  label: string;
+  /**
+   * Specify whether this address can be used for shipping, billing, or both
+   */
+  addressType: 'shipping' | 'billing' | 'both';
+  /**
+   * Set as default shipping address
+   */
+  isDefaultShipping?: boolean | null;
+  /**
+   * Set as default billing address
+   */
+  isDefaultBilling?: boolean | null;
+  /**
+   * Special delivery instructions (e.g., "Leave at front door", "Ring doorbell twice")
+   */
+  deliveryInstructions?: string | null;
+  /**
+   * Inactive addresses are hidden from selection but preserved for order history
+   */
+  isActive?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1594,6 +1618,12 @@ export interface AddressesSelect<T extends boolean = true> {
   postalCode?: T;
   country?: T;
   phone?: T;
+  label?: T;
+  addressType?: T;
+  isDefaultShipping?: T;
+  isDefaultBilling?: T;
+  deliveryInstructions?: T;
+  isActive?: T;
   updatedAt?: T;
   createdAt?: T;
 }
