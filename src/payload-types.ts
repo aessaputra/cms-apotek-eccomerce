@@ -76,6 +76,7 @@ export interface Config {
     pages: Page;
     categories: Category;
     media: Media;
+    inventory: Inventory;
     forms: Form;
     'form-submissions': FormSubmission;
     addresses: Address;
@@ -109,6 +110,7 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    inventory: InventorySelect<false> | InventorySelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
     addresses: AddressesSelect<false> | AddressesSelect<true>;
@@ -261,6 +263,22 @@ export interface Order {
   status?: OrderStatus;
   amount?: number | null;
   currency?: 'USD' | null;
+  /**
+   * Indicates if this order contains prescription items
+   */
+  prescription_required?: boolean | null;
+  /**
+   * Indicates if prescription has been verified by an admin
+   */
+  prescription_verified?: boolean | null;
+  /**
+   * Admin user who verified the prescription
+   */
+  verified_by?: (number | null) | User;
+  /**
+   * Notes about prescription verification or special instructions
+   */
+  prescription_notes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -304,6 +322,44 @@ export interface Product {
   };
   priceInUSDEnabled?: boolean | null;
   priceInUSD?: number | null;
+  /**
+   * Scientific/generic name of the drug (e.g., "Acetaminophen" for Tylenol)
+   */
+  generic_name?: string | null;
+  /**
+   * Manufacturer or brand name (e.g., "Johnson & Johnson", "Pfizer")
+   */
+  manufacturer?: string | null;
+  /**
+   * Physical form of the medication
+   */
+  dosage_form?:
+    | (
+        | 'tablet'
+        | 'capsule'
+        | 'syrup'
+        | 'liquid'
+        | 'cream'
+        | 'ointment'
+        | 'gel'
+        | 'injection'
+        | 'drops'
+        | 'spray'
+        | 'patch'
+        | 'powder'
+        | 'suppository'
+        | 'inhaler'
+        | 'other'
+      )
+    | null;
+  /**
+   * Strength/concentration of the medication (e.g., "500mg", "10ml", "2.5%")
+   */
+  strength?: string | null;
+  /**
+   * Check if this product requires a prescription to purchase
+   */
+  requires_prescription?: boolean | null;
   relatedProducts?: (number | Product)[] | null;
   meta?: {
     title?: string | null;
@@ -606,12 +662,16 @@ export interface Category {
   /**
    * Category name (e.g., "Pain Relief", "Antibiotics", "Vitamins")
    */
-  title: string;
+  name: string;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
   slug: string;
+  /**
+   * Category logo/icon image
+   */
+  logo?: (number | null) | Media;
   /**
    * Brief description of the product category
    */
@@ -940,10 +1000,23 @@ export interface Transaction {
         id?: string | null;
       }[]
     | null;
-  paymentMethod?: 'stripe' | null;
-  stripe?: {
-    customerID?: string | null;
-    paymentIntentID?: string | null;
+  paymentMethod?: 'midtrans' | null;
+  midtrans?: {
+    orderId?: string | null;
+    transactionId?: string | null;
+    snapToken?: string | null;
+    redirectUrl?: string | null;
+    paymentType?: string | null;
+    transactionStatus?: string | null;
+    response?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
   };
   billingAddress?: {
     title?: string | null;
@@ -1077,6 +1150,29 @@ export interface Address {
   createdAt: string;
 }
 /**
+ * Stock management per product
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory".
+ */
+export interface Inventory {
+  id: number;
+  /**
+   * The product this inventory belongs to (1:1 relationship)
+   */
+  product: number | Product;
+  /**
+   * Current available quantity
+   */
+  quantity: number;
+  /**
+   * Minimum stock level before low stock alert
+   */
+  low_stock_threshold?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "form-submissions".
  */
@@ -1132,6 +1228,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'inventory';
+        value: number | Inventory;
       } | null)
     | ({
         relationTo: 'forms';
@@ -1421,9 +1521,10 @@ export interface FormBlockSelect<T extends boolean = true> {
  * via the `definition` "categories_select".
  */
 export interface CategoriesSelect<T extends boolean = true> {
-  title?: T;
+  name?: T;
   generateSlug?: T;
   slug?: T;
+  logo?: T;
   description?: T;
   controlled_substance?: T;
   prescription_required?: T;
@@ -1451,6 +1552,17 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inventory_select".
+ */
+export interface InventorySelect<T extends boolean = true> {
+  product?: T;
+  quantity?: T;
+  low_stock_threshold?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1695,6 +1807,11 @@ export interface ProductsSelect<T extends boolean = true> {
   variants?: T;
   priceInUSDEnabled?: T;
   priceInUSD?: T;
+  generic_name?: T;
+  manufacturer?: T;
+  dosage_form?: T;
+  strength?: T;
+  requires_prescription?: T;
   relatedProducts?: T;
   meta?:
     | T
@@ -1767,6 +1884,10 @@ export interface OrdersSelect<T extends boolean = true> {
   status?: T;
   amount?: T;
   currency?: T;
+  prescription_required?: T;
+  prescription_verified?: T;
+  verified_by?: T;
+  prescription_notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1784,11 +1905,16 @@ export interface TransactionsSelect<T extends boolean = true> {
         id?: T;
       };
   paymentMethod?: T;
-  stripe?:
+  midtrans?:
     | T
     | {
-        customerID?: T;
-        paymentIntentID?: T;
+        orderId?: T;
+        transactionId?: T;
+        snapToken?: T;
+        redirectUrl?: T;
+        paymentType?: T;
+        transactionStatus?: T;
+        response?: T;
       };
   billingAddress?:
     | T

@@ -8,6 +8,7 @@ import { imageHatData } from './image-hat'
 import { imageHero1Data } from './image-hero-1'
 import { imageTshirtBlackData } from './image-tshirt-black'
 import { imageTshirtWhiteData } from './image-tshirt-white'
+import { seedPharmacyData } from './pharmacy-seed'
 import { productHatData } from './product-hat'
 import { productTshirtData, productTshirtVariant } from './product-tshirt'
 
@@ -573,6 +574,9 @@ export const seed = async ({
       },
     }),
   ])
+
+  // Seed pharmacy-specific data
+  await seedPharmacyData({ payload, req })
 
   payload.logger.info('Seeded database successfully!')
 }

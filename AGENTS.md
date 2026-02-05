@@ -1,3 +1,28 @@
+# Apotek E-commerce - Admin Panel (Payload CMS)
+
+## 🏗️ Project Overview
+
+This repository contains the **Payload CMS admin panel** for the Apotek E-commerce platform.
+
+| Component | Technology | Repository |
+|-----------|------------|------------|
+| **Admin Panel** | Payload CMS | **This repo** (cms-apotek-eccommerce) |
+| Customer Mobile App | React Native (Expo) | Separate repo |
+| Database | Supabase PostgreSQL | Shared database |
+| Auth (Customers) | Supabase Auth | Via React Native |
+| Auth (Admin) | Payload Auth | This repo |
+| Payments | Midtrans | Both platforms |
+
+### Database Schema
+
+See `database-schema-spec.md` for complete schema. Tables: `profiles`, `addresses`, `categories`, `products`, `product_images`, `inventory`, `orders`, `order_items`, `cart_items`, `payments`.
+
+### Supabase Integration
+
+This Payload CMS instance uses `@payloadcms/db-postgres` to connect to Supabase PostgreSQL. See `.cursor/rules/supabase-integration.md` for configuration details.
+
+---
+
 # Payload CMS Development Rules
 
 You are an expert Payload CMS developer. When working with Payload projects, follow these rules:

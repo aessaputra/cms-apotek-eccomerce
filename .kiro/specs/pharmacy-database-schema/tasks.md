@@ -42,8 +42,8 @@ The approach builds upon Payload's existing collections and functionality rather
     - Use Context7, supabase-mcp and squential thingking
     - _Requirements: 1.3, 7.1_
 
-- [ ] 3. Enhance products collection for pharmacy use
-  - [ ] 3.1 Add pharmacy-specific fields to products collection
+- [x] 3. Enhance products collection for pharmacy use
+  - [x] 3.1 Add pharmacy-specific fields to products collection
     - Add generic_name field for scientific/generic drug names
     - Add manufacturer field
     - Add dosage_form field (tablet, capsule, syrup, etc.)
@@ -51,14 +51,14 @@ The approach builds upon Payload's existing collections and functionality rather
     - Add requires_prescription boolean field
     - _Requirements: 2.1, 2.2, 2.3_
   
-  - [ ] 3.2 Create product management hooks
+  - [x] 3.2 Create product management hooks
     - Implement slug generation hook if not already present
     - Create product availability calculation hook
     - Add validation hooks for pharmacy-specific fields
     - _Requirements: 2.2, 2.5_
 
 - [ ] 4. Create new inventory collection for batch tracking
-  - [ ] 4.1 Create inventory collection
+  - [x] 4.1 Create inventory collection
     - Define collection with relationship to products
     - Add batch_number, expiry_date, and quantity tracking fields
     - Add minimum_stock_level field for reorder alerts
@@ -66,7 +66,7 @@ The approach builds upon Payload's existing collections and functionality rather
     - Implement proper validation (non-negative quantities, future expiry dates)
     - _Requirements: 3.1, 3.5_
   
-  - [ ] 4.2 Create inventory management hooks
+  - [x] 4.2 Create inventory management hooks
     - Implement stock availability calculation hooks
     - Create expired inventory identification hooks
     - Add FIFO stock allocation logic for batch selection
@@ -78,28 +78,28 @@ The approach builds upon Payload's existing collections and functionality rather
     - Add low stock notification functionality
     - _Requirements: 3.2_
 
-- [ ] 5. Enhance existing orders collection for prescriptions
-  - [ ] 5.1 Add pharmacy-specific fields to orders collection
+- [x] 5. Enhance existing orders collection for prescriptions
+  - [x] 5.1 Add pharmacy-specific fields to orders collection
     - Add prescription_required boolean field
     - Add prescription_verified boolean field
     - Add verified_by relationship to users (admin who verified)
     - Add prescription_notes text field
     - _Requirements: 5.1, 5.2, 5.3_
   
-  - [ ] 5.2 Create prescription handling hooks
+  - [x] 5.2 Create prescription handling hooks
     - Implement beforeChange hook to check prescription requirements
     - Create prescription verification workflow hooks
     - Add order status validation for prescription orders
     - _Requirements: 5.1, 5.4, 5.5_
   
-  - [ ] 5.3 Enhance order processing
+  - [x] 5.3 Enhance order processing
     - Create hooks to validate stock availability before order confirmation
     - Implement stock deduction hooks for confirmed orders
     - Add order cancellation hooks with stock restoration
     - _Requirements: 5.2, 6.2_
 
-- [ ] 6. Create inventory movements collection for audit trail
-  - [ ] 6.1 Create inventory_movements collection
+- [x] 6. Create inventory movements collection for audit trail
+  - [x] 6.1 Create inventory_movements collection
     - Define collection with relationship to inventory items
     - Add movement_type field (purchase, sale, adjustment, expiry, return)
     - Add quantity_change, quantity_before, quantity_after fields
@@ -108,95 +108,95 @@ The approach builds upon Payload's existing collections and functionality rather
     - Add reason and notes fields
     - _Requirements: 6.1, 6.4_
   
-  - [ ] 6.2 Create audit logging hooks
+  - [x] 6.2 Create audit logging hooks
     - Implement afterChange hooks on inventory to log movements
     - Create batch tracking hooks for sales
     - Add administrative adjustment logging
     - _Requirements: 6.1, 6.2, 6.5_
   
-  - [ ] 6.3 Implement audit trail protection
+  - [x] 6.3 Implement audit trail protection
     - Set inventory_movements collection to read-only after creation
     - Add access control to prevent modification of audit logs
     - _Requirements: 6.1, 6.4_
 
-- [ ] 7. Enhance cart collection for stock validation
-  - [ ] 7.1 Add stock validation to cart operations
+- [x] 7. Enhance cart collection for stock validation
+  - [x] 7.1 Add stock validation to cart operations
     - Implement beforeChange hooks to validate stock availability
     - Create hooks to check inventory levels when adding items
     - Add real-time stock validation for cart items
     - _Requirements: 4.1, 4.5_
   
-  - [ ] 7.2 Create cart-inventory integration
+  - [x] 7.2 Create cart-inventory integration
     - Implement hooks to update cart when stock levels change
     - Add validation to prevent overselling through cart operations
     - Create stock checking utilities for cart management
     - _Requirements: 4.2, 4.4, 4.5_
 
-- [ ] 8. Implement comprehensive access control
-  - [ ] 8.1 Review and enhance user data access
+- [x] 8. Implement comprehensive access control
+  - [x] 8.1 Review and enhance user data access
     - Ensure addresses collection access control is properly configured
     - Verify orders collection access control for user isolation
     - Review cart collection access control
     - _Requirements: 7.1, 7.2_
   
-  - [ ] 8.2 Create administrative access policies
+  - [x] 8.2 Create administrative access policies
     - Implement admin-only access for inventory collection
     - Create admin access for inventory_movements collection
     - Add role validation for administrative operations
     - _Requirements: 7.3, 7.4, 6.3_
 
-- [ ] 9. Create utility functions and endpoints
-  - [ ] 9.1 Implement core business logic functions
+- [x] 9. Create utility functions and endpoints
+  - [x] 9.1 Implement core business logic functions
     - Create stock availability checking utilities
     - Implement order processing utilities
     - Add prescription validation utilities
     - _Requirements: 4.5, 5.1, 8.1_
   
-  - [ ] 9.2 Create custom endpoints if needed
+  - [x] 9.2 Create custom endpoints if needed
     - Add inventory reporting endpoints
     - Create stock level monitoring endpoints
     - Implement prescription verification endpoints
     - _Requirements: 8.4, 8.5_
 
-- [ ] 10. Add performance optimizations
-  - [ ] 10.1 Optimize database queries
+- [x] 10. Add performance optimizations
+  - [x] 10.1 Optimize database queries
     - Add database indexes for inventory lookups
     - Optimize product-inventory relationship queries
     - Add indexes for audit trail queries
     - _Requirements: 8.3_
   
-  - [ ] 10.2 Implement caching strategies
+  - [x] 10.2 Implement caching strategies
     - Add caching for stock availability calculations
     - Implement caching for frequently accessed product data
     - _Requirements: 8.3_
 
-- [ ] 11. Create utility collections and functions
-  - [ ] 11.1 Implement stock management utilities
+- [x] 11. Create utility collections and functions
+  - [x] 11.1 Implement stock management utilities
     - Create low stock products query utilities
     - Implement expiring products identification
     - Add inventory valuation functions
     - _Requirements: 3.2, 3.3_
   
-  - [ ] 11.2 Create reporting utilities
+  - [x] 11.2 Create reporting utilities
     - Implement sales reporting functions
     - Create inventory status reporting
     - Add prescription tracking reports
     - _Requirements: 6.5_
 
-- [ ] 12. Final integration and testing
-  - [ ] 12.1 Create test data and seed functions
+- [x] 12. Final integration and testing
+  - [x] 12.1 Create test data and seed functions
     - Set up sample pharmaceutical categories and products
     - Create test inventory with various batch numbers and expiry dates
     - Add sample addresses and orders for testing
     - _Requirements: All_
   
-  - [ ] 12.2 Implement data integrity measures
+  - [x] 12.2 Implement data integrity measures
     - Add proper validation across all enhanced collections
     - Implement transaction safety for complex operations
     - Create data consistency checks
     - _Requirements: 8.1, 8.2_
 
-- [ ] 13. Final checkpoint - Complete system validation
+- [x] 13. Final checkpoint - Complete system validation
   - Ensure all Payload collections work correctly with enhancements
   - Verify pharmacy-specific functionality operates as expected
   - Test integration with existing e-commerce features

@@ -5,17 +5,19 @@ import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
 import { FixedToolbarFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
 import { Plugin } from 'payload'
 
-import { stripeAdapter } from '@payloadcms/plugin-ecommerce/payments/stripe'
+import { midtransAdapter } from '@/payments/midtrans'
 
 import { adminOnlyFieldAccess } from '@/access/adminOnlyFieldAccess'
 import { adminOrPublishedStatus } from '@/access/adminOrPublishedStatus'
 import { customerOnlyFieldAccess } from '@/access/customerOnlyFieldAccess'
 import { isAdmin } from '@/access/isAdmin'
 import { isDocumentOwner } from '@/access/isDocumentOwner'
+import { OrdersCollection } from '@/collections/Orders'
 import { ProductsCollection } from '@/collections/Products'
 import { Page, Product } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
 import { enhanceAddressesPlugin } from './enhanceAddresses'
+import { enhanceCartPlugin } from './enhanceCart'
 
 const generateTitle: GenerateTitle<Product | Page> = ({ doc }) => {
   return doc?.title ? `${doc.title} | Payload Ecommerce Template` : 'Payload Ecommerce Template'
@@ -79,17 +81,22 @@ export const plugins: Plugin[] = [
     },
     payments: {
       paymentMethods: [
-        stripeAdapter({
-          secretKey: process.env.STRIPE_SECRET_KEY!,
-          publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
-          webhookSecret: process.env.STRIPE_WEBHOOKS_SIGNING_SECRET!,
+        midtransAdapter({
+          serverKey: process.env.MIDTRANS_SERVER_KEY!,
+          clientKey: process.env.MIDTRANS_CLIENT_KEY!,
+          isProduction: process.env.MIDTRANS_IS_PRODUCTION === 'true',
         }),
       ],
     },
     products: {
       productsCollectionOverride: ProductsCollection,
     },
+    orders: {
+      ordersCollectionOverride: OrdersCollection,
+    },
   }),
   // Apply address enhancements after e-commerce plugin
   enhanceAddressesPlugin(),
+  // Apply cart enhancements after e-commerce plugin
+  enhanceCartPlugin(),
 ]

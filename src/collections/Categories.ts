@@ -13,13 +13,13 @@ export const Categories: CollectionConfig = {
     update: adminOnly,
   },
   admin: {
-    useAsTitle: 'title',
+    useAsTitle: 'name',
     group: 'Content',
-    defaultColumns: ['title', 'controlled_substance', 'prescription_required', 'is_active'],
+    defaultColumns: ['name', 'logo', 'controlled_substance', 'prescription_required', 'is_active'],
   },
   fields: [
     {
-      name: 'title',
+      name: 'name',
       type: 'text',
       required: true,
       admin: {
@@ -27,8 +27,16 @@ export const Categories: CollectionConfig = {
       },
     },
     slugField({
-      position: undefined,
+      fieldToUse: 'name',
     }),
+    {
+      name: 'logo',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'Category logo/icon image',
+      },
+    },
     {
       name: 'description',
       type: 'textarea',
@@ -87,8 +95,8 @@ export const Categories: CollectionConfig = {
     beforeChange: [
       async ({ data, operation }) => {
         // Auto-generate slug if not provided
-        if (operation === 'create' && !data.slug && data.title) {
-          data.slug = data.title
+        if (operation === 'create' && !data.slug && data.name) {
+          data.slug = data.name
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/(^-|-$)/g, '')

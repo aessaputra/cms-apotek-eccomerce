@@ -1,7 +1,6 @@
 import { CallToAction } from '@/blocks/CallToAction/config'
 import { Content } from '@/blocks/Content/config'
 import { MediaBlock } from '@/blocks/MediaBlock/config'
-import { slugField } from 'payload'
 import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
 import {
@@ -18,13 +17,17 @@ import {
   InlineToolbarFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
-import { DefaultDocumentIDType, Where } from 'payload'
+import { DefaultDocumentIDType, slugField, Where } from 'payload'
+import {
+  calculateProductAvailability,
+  validatePharmacyFields
+} from './hooks'
 
 export const ProductsCollection: CollectionOverride = ({ defaultCollection }) => ({
   ...defaultCollection,
   admin: {
     ...defaultCollection?.admin,
-    defaultColumns: ['title', 'enableVariants', '_status', 'variants.variants'],
+    defaultColumns: ['title', 'generic_name', 'manufacturer', 'requires_prescription', '_status'],
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({
@@ -144,6 +147,67 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
           fields: [
             ...defaultCollection.fields,
             {
+              name: 'generic_name',
+              type: 'text',
+              index: true, // Index for search functionality
+              admin: {
+                description: 'Scientific/generic name of the drug (e.g., "Acetaminophen" for Tylenol)',
+                position: 'sidebar',
+              },
+            },
+            {
+              name: 'manufacturer',
+              type: 'text',
+              index: true, // Index for manufacturer filtering
+              admin: {
+                description: 'Manufacturer or brand name (e.g., "Johnson & Johnson", "Pfizer")',
+                position: 'sidebar',
+              },
+            },
+            {
+              name: 'dosage_form',
+              type: 'select',
+              options: [
+                { label: 'Tablet', value: 'tablet' },
+                { label: 'Capsule', value: 'capsule' },
+                { label: 'Syrup', value: 'syrup' },
+                { label: 'Liquid', value: 'liquid' },
+                { label: 'Cream', value: 'cream' },
+                { label: 'Ointment', value: 'ointment' },
+                { label: 'Gel', value: 'gel' },
+                { label: 'Injection', value: 'injection' },
+                { label: 'Drops', value: 'drops' },
+                { label: 'Spray', value: 'spray' },
+                { label: 'Patch', value: 'patch' },
+                { label: 'Powder', value: 'powder' },
+                { label: 'Suppository', value: 'suppository' },
+                { label: 'Inhaler', value: 'inhaler' },
+                { label: 'Other', value: 'other' },
+              ],
+              admin: {
+                description: 'Physical form of the medication',
+                position: 'sidebar',
+              },
+            },
+            {
+              name: 'strength',
+              type: 'text',
+              admin: {
+                description: 'Strength/concentration of the medication (e.g., "500mg", "10ml", "2.5%")',
+                position: 'sidebar',
+              },
+            },
+            {
+              name: 'requires_prescription',
+              type: 'checkbox',
+              defaultValue: false,
+              index: true, // Index for prescription filtering
+              admin: {
+                description: 'Check if this product requires a prescription to purchase',
+                position: 'sidebar',
+              },
+            },
+            {
               name: 'relatedProducts',
               type: 'relationship',
               filterOptions: ({ id }) => {
@@ -209,4 +273,22 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
     },
     slugField(),
   ],
+  hooks: {
+    beforeValidate: [
+      async ({ data, operation }) => {
+        // Generate slug from title if not provided
+        if (operation === 'create' && data && !data.slug && data.title) {
+          data.slug = data.title
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '')
+            .substring(0, 100)
+        }
+        return data
+      },
+    ],
+    beforeChange: [validatePharmacyFields],
+    afterRead: [calculateProductAvailability],
+  },
 })

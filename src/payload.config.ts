@@ -1,23 +1,26 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import {
-    BoldFeature,
-    EXPERIMENTAL_TableFeature,
-    IndentFeature,
-    ItalicFeature,
-    LinkFeature,
-    OrderedListFeature,
-    UnderlineFeature,
-    UnorderedListFeature,
-    lexicalEditor,
+  BoldFeature,
+  EXPERIMENTAL_TableFeature,
+  IndentFeature,
+  ItalicFeature,
+  LinkFeature,
+  OrderedListFeature,
+  UnderlineFeature,
+  UnorderedListFeature,
+  lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { Categories } from '@/collections/Categories'
+import { Inventory } from '@/collections/Inventory'
+
 import { Media } from '@/collections/Media'
 import { Pages } from '@/collections/Pages'
 import { Users } from '@/collections/Users'
+import { pharmacyEndpoints } from '@/endpoints'
 import { Footer } from '@/globals/Footer'
 import { Header } from '@/globals/Header'
 import { plugins } from './plugins'
@@ -37,7 +40,7 @@ export default buildConfig({
     },
     user: Users.slug,
   },
-  collections: [Users, Pages, Categories, Media],
+  collections: [Users, Pages, Categories, Media, Inventory],
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
@@ -79,7 +82,7 @@ export default buildConfig({
     },
   }),
   //email: nodemailerAdapter(),
-  endpoints: [],
+  endpoints: pharmacyEndpoints,
   globals: [Header, Footer],
   plugins,
   secret: process.env.PAYLOAD_SECRET || '',
