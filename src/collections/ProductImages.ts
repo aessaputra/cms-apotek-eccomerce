@@ -1,5 +1,5 @@
-import { adminOrCustomerOwner } from '@/access/adminOrCustomerOwner'
-import { adminOrPublishedStatus } from '@/access/adminOrPublishedStatus'
+import { adminOnly } from '@/access/adminOnly'
+import { publicAccess } from '@/access/publicAccess'
 import type { CollectionConfig } from 'payload'
 
 export const ProductImages: CollectionConfig = {
@@ -11,10 +11,10 @@ export const ProductImages: CollectionConfig = {
         defaultColumns: ['image_url', 'product', 'is_primary', 'sort_order'],
     },
     access: {
-        create: adminOrCustomerOwner,
-        read: adminOrPublishedStatus,
-        update: adminOrCustomerOwner,
-        delete: adminOrCustomerOwner,
+        create: adminOnly,
+        read: publicAccess,
+        update: adminOnly,
+        delete: adminOnly,
     },
     fields: [
         {

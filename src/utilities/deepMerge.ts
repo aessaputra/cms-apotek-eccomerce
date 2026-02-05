@@ -14,23 +14,18 @@ export function isObject(item: unknown): boolean {
  * @param target
  * @param ...sources
  */
-export function deepMerge<T extends object, R extends object>(target: T, source: R): T & R {
-  const output = { ...target } as T & R
+export function deepMerge<T extends Record<string, unknown>, R extends Record<string, unknown>>(target: T, source: R): T & R {
+  const output = { ...target } as unknown as T & R
   if (isObject(target) && isObject(source)) {
     Object.keys(source).forEach((key) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const sourceValue = (source as any)[key]
+      const sourceValue = source[key]
+      const targetValue = target[key]
 
-      if (isObject(sourceValue)) {
-        if (!(key in target)) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          Object.assign(output, { [key]: sourceValue })
-        } else {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (output as any)[key] = deepMerge((target as any)[key], sourceValue)
-        }
+      if (isObject(sourceValue) && isObject(targetValue)) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        output[key] = deepMerge(targetValue as Record<string, unknown>, sourceValue as Record<string, unknown>)
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Object.assign(output, { [key]: sourceValue })
       }
     })
@@ -38,3 +33,5 @@ export function deepMerge<T extends object, R extends object>(target: T, source:
 
   return output
 }
+
+

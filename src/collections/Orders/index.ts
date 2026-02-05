@@ -1,10 +1,8 @@
 import { adminOrCustomerOwner } from '@/access/adminOrCustomerOwner'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
 import {
-  checkPrescriptionRequirements,
   deductStockOnConfirmation,
-  restoreStockOnCancellation,
-  validateStockAvailability,
+  restoreStockOnCancellation
 } from './hooks'
 
 export const OrdersCollection: CollectionOverride = ({ defaultCollection }) => ({
@@ -17,8 +15,8 @@ export const OrdersCollection: CollectionOverride = ({ defaultCollection }) => (
       'customer',
       'total',
       'status',
-      'prescription_required',
-      'prescription_verified',
+      // 'prescription_required', // Disabled for strict schema
+      // 'prescription_verified', // Disabled for strict schema
       'createdAt'
     ],
     useAsTitle: 'id',
@@ -33,17 +31,17 @@ export const OrdersCollection: CollectionOverride = ({ defaultCollection }) => (
   },
   fields: [
     ...defaultCollection.fields,
-    {
-      name: 'prescription_required',
-      type: 'checkbox',
-      defaultValue: false,
-      index: true, // Index for prescription order filtering
-      admin: {
-        description: 'Indicates if this order contains prescription items',
-        position: 'sidebar',
-        readOnly: true, // This will be set automatically based on products
-      },
-    },
+    // {
+    //   name: 'prescription_required',
+    //   type: 'checkbox',
+    //   defaultValue: false,
+    //   index: true, // Index for prescription order filtering
+    //   admin: {
+    //     description: 'Indicates if this order contains prescription items',
+    //     position: 'sidebar',
+    //     readOnly: true, // This will be set automatically based on products
+    //   },
+    // },
     {
       name: 'prescription_verified',
       type: 'checkbox',
@@ -61,48 +59,48 @@ export const OrdersCollection: CollectionOverride = ({ defaultCollection }) => (
         },
       },
     },
-    {
-      name: 'verified_by',
-      type: 'relationship',
-      relationTo: 'users',
-      admin: {
-        description: 'Admin user who verified the prescription',
-        position: 'sidebar',
-        condition: (data) => data?.prescription_verified === true,
-      },
-      access: {
-        update: ({ req: { user } }) => {
-          // Only admins can set who verified
-          return user?.role === 'admin' || false
-        },
-      },
-      filterOptions: {
-        roles: {
-          contains: 'admin',
-        },
-      },
-    },
-    {
-      name: 'prescription_notes',
-      type: 'textarea',
-      admin: {
-        description: 'Notes about prescription verification or special instructions',
-        position: 'sidebar',
-        condition: (data) => data?.prescription_required === true,
-      },
-      access: {
-        update: ({ req: { user } }) => {
-          // Only admins can add prescription notes
-          return user?.role === 'admin' || false
-        },
-      },
-    },
+    // {
+    //   name: 'verified_by',
+    //   type: 'relationship',
+    //   relationTo: 'users',
+    //   admin: {
+    //     description: 'Admin user who verified the prescription',
+    //     position: 'sidebar',
+    //     condition: (data) => data?.prescription_verified === true,
+    //   },
+    //   access: {
+    //     update: ({ req: { user } }) => {
+    //       // Only admins can set who verified
+    //       return user?.role === 'admin' || false
+    //     },
+    //   },
+    //   filterOptions: {
+    //     roles: {
+    //       contains: 'admin',
+    //     },
+    //   },
+    // },
+    // {
+    //   name: 'prescription_notes',
+    //   type: 'textarea',
+    //   admin: {
+    //     description: 'Notes about prescription verification or special instructions',
+    //     position: 'sidebar',
+    //     condition: (data) => data?.prescription_required === true,
+    //   },
+    //   access: {
+    //     update: ({ req: { user } }) => {
+    //       // Only admins can add prescription notes
+    //       return user?.role === 'admin' || false
+    //     },
+    //   },
+    // },
   ],
   hooks: {
-    beforeChange: [
-      checkPrescriptionRequirements,
-      validateStockAvailability,
-    ],
+    // beforeChange: [
+    //   checkPrescriptionRequirements,
+    //   validateStockAvailability,
+    // ],
     afterChange: [
       deductStockOnConfirmation,
       restoreStockOnCancellation,

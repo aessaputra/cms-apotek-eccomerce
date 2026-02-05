@@ -112,8 +112,8 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
                                 status,
                                 midtrans_transaction_id: transaction_id,
                                 midtrans_payment_type: payment_type,
-                                // Cast to any to satisfy Record<string, unknown> constraint of generic JSON type
-                                midtrans_response: notification as any,
+                                // Cast to satisfy Record<string, unknown> constraint of generic JSON type
+                                midtrans_response: notification as unknown as Record<string, unknown>,
                             },
                         })
                         req.payload.logger.info(`[Midtrans] Transaction updated: ${transactionId}, status=${status}`)
@@ -158,7 +158,7 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
          * Initiate payment - creates Snap token for checkout
          */
         initiatePayment: async ({ data, req, transactionsSlug }) => {
-            const { cart, currency, customerEmail, billingAddress, shippingAddress } = data
+            const { cart, currency, customerEmail, billingAddress } = data
 
             // Generate unique order ID for Midtrans based on timestamp
             // We'll store the transaction ID after creating it in Payload
@@ -167,10 +167,9 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
             // Build item details from cart
             const itemDetails: MidtransItemDetail[] = cart.items?.map((item) => {
                 const product = typeof item.product === 'object' ? item.product : null
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const title = (product as any)?.title || (product as any)?.name || 'Product'
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const price = Math.round((product as any)?.price || 0)
+                const productData = product as { title?: string, name?: string, price?: number } | null
+                const title = productData?.title || productData?.name || 'Product'
+                const price = Math.round(productData?.price || 0)
 
                 return {
                     id: String(typeof item.product === 'object' ? item.product?.id : item.product),
@@ -313,7 +312,7 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
                             status: 'succeeded',
                             midtrans_transaction_id: status.transaction_id,
                             midtrans_payment_type: status.payment_type,
-                            midtrans_response: status as any,
+                            midtrans_response: status as unknown as Record<string, unknown>,
                         },
                     })
                 } catch (statusError) {
@@ -338,7 +337,7 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
 
             // Clear the customer's cart if cart exists
             const customerId = typeof transaction.customer === 'object'
-                ? (transaction.customer as any)?.id
+                ? (transaction.customer as { id: string | number })?.id
                 : transaction.customer
 
             if (customerId && cartsSlug) {

@@ -1,5 +1,5 @@
 import { adminOnlyFieldAccess } from '@/access/adminOnlyFieldAccess'
-import { adminOrSelf } from '@/access/adminOrSelf'
+import { adminOrUserId } from '@/access/adminOrUserId'
 import type { CollectionConfig } from 'payload'
 
 export const CartItems: CollectionConfig = {
@@ -10,10 +10,10 @@ export const CartItems: CollectionConfig = {
         defaultColumns: ['product_id', 'quantity', 'user_id'],
     },
     access: {
-        create: adminOrSelf,
-        read: adminOrSelf,
-        update: adminOrSelf,
-        delete: adminOrSelf,
+        create: adminOrUserId,
+        read: adminOrUserId,
+        update: adminOrUserId,
+        delete: adminOrUserId,
     },
     fields: [
         {

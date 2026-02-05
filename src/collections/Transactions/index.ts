@@ -1,3 +1,4 @@
+import { adminOnly } from '@/access/adminOnly'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
 import { Field } from 'payload'
 
@@ -57,6 +58,12 @@ export const TransactionsCollection: CollectionOverride = ({ defaultCollection }
     admin: {
         ...defaultCollection.admin,
         useAsTitle: 'id',
+    },
+    access: {
+        read: adminOnly,
+        create: adminOnly,
+        update: adminOnly,
+        delete: adminOnly,
     },
     fields: [
         ...replaceFields(defaultCollection.fields),

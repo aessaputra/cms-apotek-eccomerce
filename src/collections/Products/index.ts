@@ -1,3 +1,5 @@
+import { adminOnly } from '@/access/adminOnly'
+import { publicAccess } from '@/access/publicAccess'
 import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
 import {
@@ -16,8 +18,7 @@ import {
 } from '@payloadcms/richtext-lexical'
 import { slugField } from 'payload'
 import {
-  calculateProductAvailability,
-  validatePharmacyFields
+  calculateProductAvailability
 } from './hooks'
 
 export const ProductsCollection: CollectionOverride = ({ defaultCollection }) => ({
@@ -25,7 +26,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
   dbName: 'products',
   admin: {
     ...defaultCollection?.admin,
-    defaultColumns: ['title', 'generic_name', 'manufacturer', 'requires_prescription', '_status'],
+    defaultColumns: ['title', '_status'],
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({
@@ -41,6 +42,12 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
         req,
       }),
     useAsTitle: 'title',
+  },
+  access: {
+    create: adminOnly,
+    read: publicAccess,
+    update: adminOnly,
+    delete: adminOnly,
   },
   defaultPopulate: {
     ...defaultCollection?.defaultPopulate,
@@ -94,67 +101,68 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
         {
           fields: [
             ...defaultCollection.fields,
-            {
-              name: 'generic_name',
-              type: 'text',
-              index: true, // Index for search functionality
-              admin: {
-                description: 'Scientific/generic name of the drug (e.g., "Acetaminophen" for Tylenol)',
-                position: 'sidebar',
-              },
-            },
-            {
-              name: 'manufacturer',
-              type: 'text',
-              index: true, // Index for manufacturer filtering
-              admin: {
-                description: 'Manufacturer or brand name (e.g., "Johnson & Johnson", "Pfizer")',
-                position: 'sidebar',
-              },
-            },
-            {
-              name: 'dosage_form',
-              type: 'select',
-              options: [
-                { label: 'Tablet', value: 'tablet' },
-                { label: 'Capsule', value: 'capsule' },
-                { label: 'Syrup', value: 'syrup' },
-                { label: 'Liquid', value: 'liquid' },
-                { label: 'Cream', value: 'cream' },
-                { label: 'Ointment', value: 'ointment' },
-                { label: 'Gel', value: 'gel' },
-                { label: 'Injection', value: 'injection' },
-                { label: 'Drops', value: 'drops' },
-                { label: 'Spray', value: 'spray' },
-                { label: 'Patch', value: 'patch' },
-                { label: 'Powder', value: 'powder' },
-                { label: 'Suppository', value: 'suppository' },
-                { label: 'Inhaler', value: 'inhaler' },
-                { label: 'Other', value: 'other' },
-              ],
-              admin: {
-                description: 'Physical form of the medication',
-                position: 'sidebar',
-              },
-            },
-            {
-              name: 'strength',
-              type: 'text',
-              admin: {
-                description: 'Strength/concentration of the medication (e.g., "500mg", "10ml", "2.5%")',
-                position: 'sidebar',
-              },
-            },
-            {
-              name: 'requires_prescription',
-              type: 'checkbox',
-              defaultValue: false,
-              index: true, // Index for prescription filtering
-              admin: {
-                description: 'Check if this product requires a prescription to purchase',
-                position: 'sidebar',
-              },
-            },
+            // Non-schema fields disabled for strict compliance
+            // {
+            //   name: 'generic_name',
+            //   type: 'text',
+            //   index: true, // Index for search functionality
+            //   admin: {
+            //     description: 'Scientific/generic name of the drug (e.g., "Acetaminophen" for Tylenol)',
+            //     position: 'sidebar',
+            //   },
+            // },
+            // {
+            //   name: 'manufacturer',
+            //   type: 'text',
+            //   index: true, // Index for manufacturer filtering
+            //   admin: {
+            //     description: 'Manufacturer or brand name (e.g., "Johnson & Johnson", "Pfizer")',
+            //     position: 'sidebar',
+            //   },
+            // },
+            // {
+            //   name: 'dosage_form',
+            //   type: 'select',
+            //   options: [
+            //     { label: 'Tablet', value: 'tablet' },
+            //     { label: 'Capsule', value: 'capsule' },
+            //     { label: 'Syrup', value: 'syrup' },
+            //     { label: 'Liquid', value: 'liquid' },
+            //     { label: 'Cream', value: 'cream' },
+            //     { label: 'Ointment', value: 'ointment' },
+            //     { label: 'Gel', value: 'gel' },
+            //     { label: 'Injection', value: 'injection' },
+            //     { label: 'Drops', value: 'drops' },
+            //     { label: 'Spray', value: 'spray' },
+            //     { label: 'Patch', value: 'patch' },
+            //     { label: 'Powder', value: 'powder' },
+            //     { label: 'Suppository', value: 'suppository' },
+            //     { label: 'Inhaler', value: 'inhaler' },
+            //     { label: 'Other', value: 'other' },
+            //   ],
+            //   admin: {
+            //     description: 'Physical form of the medication',
+            //     position: 'sidebar',
+            //   },
+            // },
+            // {
+            //   name: 'strength',
+            //   type: 'text',
+            //   admin: {
+            //     description: 'Strength/concentration of the medication (e.g., "500mg", "10ml", "2.5%")',
+            //     position: 'sidebar',
+            //   },
+            // },
+            // {
+            //   name: 'requires_prescription',
+            //   type: 'checkbox',
+            //   defaultValue: false,
+            //   index: true, // Index for prescription filtering
+            //   admin: {
+            //     description: 'Check if this product requires a prescription to purchase',
+            //     position: 'sidebar',
+            //   },
+            // },
 
           ],
           label: 'Product Details',
@@ -216,7 +224,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
         return data
       },
     ],
-    beforeChange: [validatePharmacyFields],
+    // beforeChange: [validatePharmacyFields],
     afterRead: [calculateProductAvailability],
   },
 })

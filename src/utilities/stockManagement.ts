@@ -70,7 +70,6 @@ export async function getLowStockProducts(
     const {
       limit = 100,
       categoryId,
-      requiresPrescription,
       sortBy = 'deficit',
       sortOrder = 'desc',
       minDeficit = 1,
@@ -92,21 +91,13 @@ export async function getLowStockProducts(
         const product = typeof inventory.product === 'object' ? (inventory.product as Product) : null
         if (!product) return null
 
-        const productId = product.id
-
         // Apply category filter
-        const categories = product.categories
+        const category = product.category
         if (categoryId) {
-          if (!categories || categories.length === 0) return null
-          const hasCategory = categories.some(cat => {
-            if (typeof cat === 'object') return cat.id === categoryId
-            return cat === categoryId
-          })
-          if (!hasCategory) return null
+          if (!category) return null
+          const catId = typeof category === 'object' ? category.id : category
+          if (catId !== categoryId) return null
         }
-
-        // Apply prescription filter
-        if (requiresPrescription !== undefined && product.requires_prescription !== requiresPrescription) return null
 
         const quantity = inventory.quantity || 0
         const threshold = inventory.low_stock_threshold || 10
@@ -125,17 +116,17 @@ export async function getLowStockProducts(
 
         return {
           productId: product.id,
-          productName: product.title || product.generic_name || 'Unknown Product',
+          productName: product.title || 'Unknown Product',
           productSlug: product.slug || '',
-          category: (categories && categories.length > 0 && typeof categories[0] === 'object')
-            ? (categories[0].name || 'Uncategorized')
+          category: (category && typeof category === 'object')
+            ? (category.name || 'Uncategorized')
             : 'Uncategorized',
           totalAvailable: quantity,
           minimumStockLevel: threshold,
           deficit,
           deficitPercentage,
           estimatedValue,
-          requiresPrescription: product.requires_prescription || false,
+          requiresPrescription: false, // Defaulting to false as field usage was removed
           lastRestocked: inventory.updatedAt,
         } as LowStockProduct
       })

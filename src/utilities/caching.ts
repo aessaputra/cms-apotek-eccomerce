@@ -533,12 +533,12 @@ export const generateCacheKey = (prefix: string, params: Record<string, unknown>
  * Cache middleware for Payload hooks
  */
 export function createCacheMiddleware(
-  cacheKey: (doc: any) => string,
+  cacheKey: (doc: { id: string | number } & Record<string, unknown>) => string,
   ttl?: number
 ) {
   return {
     afterRead: [
-      async ({ doc }: { doc: any }) => {
+      async ({ doc }: { doc: { id: string | number } & Record<string, unknown> }) => {
         if (doc) {
           const key = cacheKey(doc)
           productCache.set(key, doc, ttl)
@@ -547,7 +547,7 @@ export function createCacheMiddleware(
       },
     ],
     afterChange: [
-      async ({ doc }: { doc: any }) => {
+      async ({ doc }: { doc: { id: string | number } & Record<string, unknown> }) => {
         if (doc) {
           const key = cacheKey(doc)
           productCache.delete(key)
@@ -559,7 +559,7 @@ export function createCacheMiddleware(
       },
     ],
     afterDelete: [
-      async ({ doc }: { doc: any }) => {
+      async ({ doc }: { doc: { id: string | number } & Record<string, unknown> }) => {
         if (doc) {
           const key = cacheKey(doc)
           productCache.delete(key)

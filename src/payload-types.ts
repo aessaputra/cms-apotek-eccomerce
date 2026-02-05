@@ -311,44 +311,6 @@ export interface Product {
   };
   priceInUSDEnabled?: boolean | null;
   priceInUSD?: number | null;
-  /**
-   * Scientific/generic name of the drug (e.g., "Acetaminophen" for Tylenol)
-   */
-  generic_name?: string | null;
-  /**
-   * Manufacturer or brand name (e.g., "Johnson & Johnson", "Pfizer")
-   */
-  manufacturer?: string | null;
-  /**
-   * Physical form of the medication
-   */
-  dosage_form?:
-    | (
-        | 'tablet'
-        | 'capsule'
-        | 'syrup'
-        | 'liquid'
-        | 'cream'
-        | 'ointment'
-        | 'gel'
-        | 'injection'
-        | 'drops'
-        | 'spray'
-        | 'patch'
-        | 'powder'
-        | 'suppository'
-        | 'inhaler'
-        | 'other'
-      )
-    | null;
-  /**
-   * Strength/concentration of the medication (e.g., "500mg", "10ml", "2.5%")
-   */
-  strength?: string | null;
-  /**
-   * Check if this product requires a prescription to purchase
-   */
-  requires_prescription?: boolean | null;
   meta?: {
     title?: string | null;
     /**
@@ -1338,11 +1300,6 @@ export interface ProductsSelect<T extends boolean = true> {
   variants?: T;
   priceInUSDEnabled?: T;
   priceInUSD?: T;
-  generic_name?: T;
-  manufacturer?: T;
-  dosage_form?: T;
-  strength?: T;
-  requires_prescription?: T;
   meta?:
     | T
     | {

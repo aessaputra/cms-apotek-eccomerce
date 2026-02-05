@@ -36,7 +36,19 @@ export const checkProductStock: Endpoint = {
         // Detailed stock information for authenticated users
         const stockResult = await checkStockAvailability(req.payload, productId, quantity)
 
-        const response: Record<string, any> = {
+        interface StockResponse {
+          success: boolean
+          data: {
+            productId: string
+            isAvailable: boolean
+            availableStock: number
+            requestedQuantity: number
+            totalStock?: number
+            reservedStock?: number
+          }
+        }
+
+        const response: StockResponse = {
           success: true,
           data: {
             productId,
@@ -139,7 +151,19 @@ export const checkBulkStock: Endpoint = {
 
       const isAdmin = req.user.role === 'admin'
 
-      const response: Record<string, any> = {
+      interface BulkStockResponse {
+        success: boolean
+        data: {
+          allAvailable: boolean
+          totalItems: number
+          availableItems: number
+          unavailableItems: number
+          unavailableProducts: unknown[]
+          detailedResults?: unknown[]
+        }
+      }
+
+      const response: BulkStockResponse = {
         success: true,
         data: {
           allAvailable: bulkResult.allAvailable,
