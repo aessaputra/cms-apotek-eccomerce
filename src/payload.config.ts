@@ -16,13 +16,10 @@ import { fileURLToPath } from 'url'
 
 import { Categories } from '@/collections/Categories'
 import { Inventory } from '@/collections/Inventory'
-
 import { Media } from '@/collections/Media'
 import { Pages } from '@/collections/Pages'
 import { Users } from '@/collections/Users'
 import { pharmacyEndpoints } from '@/endpoints'
-import { Footer } from '@/globals/Footer'
-import { Header } from '@/globals/Header'
 import { plugins } from './plugins'
 
 const filename = fileURLToPath(import.meta.url)
@@ -83,7 +80,7 @@ export default buildConfig({
   }),
   //email: nodemailerAdapter(),
   endpoints: pharmacyEndpoints,
-  globals: [Header, Footer],
+  // globals: [Header, Footer], // Removed for Headless setup
   plugins,
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
