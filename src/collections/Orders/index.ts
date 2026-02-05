@@ -1,14 +1,15 @@
 import { adminOrCustomerOwner } from '@/access/adminOrCustomerOwner'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
 import {
-    checkPrescriptionRequirements,
-    deductStockOnConfirmation,
-    restoreStockOnCancellation,
-    validateStockAvailability,
+  checkPrescriptionRequirements,
+  deductStockOnConfirmation,
+  restoreStockOnCancellation,
+  validateStockAvailability,
 } from './hooks'
 
 export const OrdersCollection: CollectionOverride = ({ defaultCollection }) => ({
   ...defaultCollection,
+  dbName: 'orders',
   admin: {
     ...defaultCollection?.admin,
     defaultColumns: [
@@ -56,7 +57,7 @@ export const OrdersCollection: CollectionOverride = ({ defaultCollection }) => (
       access: {
         update: ({ req: { user } }) => {
           // Only admins can verify prescriptions
-          return user?.roles?.includes('admin') || false
+          return user?.role === 'admin' || false
         },
       },
     },
@@ -72,7 +73,7 @@ export const OrdersCollection: CollectionOverride = ({ defaultCollection }) => (
       access: {
         update: ({ req: { user } }) => {
           // Only admins can set who verified
-          return user?.roles?.includes('admin') || false
+          return user?.role === 'admin' || false
         },
       },
       filterOptions: {
@@ -92,7 +93,7 @@ export const OrdersCollection: CollectionOverride = ({ defaultCollection }) => (
       access: {
         update: ({ req: { user } }) => {
           // Only admins can add prescription notes
-          return user?.roles?.includes('admin') || false
+          return user?.role === 'admin' || false
         },
       },
     },

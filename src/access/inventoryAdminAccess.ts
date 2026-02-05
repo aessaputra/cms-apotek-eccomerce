@@ -26,15 +26,15 @@ export const inventoryAdminAccess: Access = ({ req }) => {
     return false
   }
 
-  // Validate that user has roles array
-  if (!user.roles || !Array.isArray(user.roles)) {
-    req.payload.logger.warn(`User ${user.id} has invalid roles structure for inventory access: ${JSON.stringify(user.roles)}`)
+  // Validate that user has role string
+  if (!user.role || typeof user.role !== 'string') {
+    req.payload.logger.warn(`User ${user.id} has invalid role structure for inventory access: ${JSON.stringify(user.role)}`)
     return false
   }
 
   // Check for admin role
   const hasAdminRole = checkRole(['admin'], user)
-  
+
   if (!hasAdminRole) {
     req.payload.logger.info(`Inventory access denied for user ${user.id} - admin role required`)
     return false
@@ -42,6 +42,6 @@ export const inventoryAdminAccess: Access = ({ req }) => {
 
   // Log successful access for audit purposes
   req.payload.logger.info(`Inventory access granted to admin user ${user.id}`)
-  
+
   return true
 }

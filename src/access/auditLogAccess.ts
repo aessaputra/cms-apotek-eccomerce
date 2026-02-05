@@ -29,15 +29,17 @@ export const auditLogAccess: Access = ({ req }) => {
     return false
   }
 
-  // Validate that user has roles array
-  if (!user.roles || !Array.isArray(user.roles)) {
-    req.payload.logger.warn(`User ${user.id} has invalid roles structure for audit log access: ${JSON.stringify(user.roles)}`)
+  // Validate that user has role string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!(user as any).role || typeof (user as any).role !== 'string') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    req.payload.logger.warn(`User ${user.id} has invalid role structure for audit log access: ${JSON.stringify((user as any).role)}`)
     return false
   }
 
   // Check for admin role
   const hasAdminRole = checkRole(['admin'], user)
-  
+
   if (!hasAdminRole) {
     req.payload.logger.info(`Audit log access denied for user ${user.id} - admin role required`)
     return false
@@ -45,7 +47,7 @@ export const auditLogAccess: Access = ({ req }) => {
 
   // Log audit log access for security monitoring
   req.payload.logger.info(`Audit log access granted to admin user ${user.id}`)
-  
+
   return true
 }
 

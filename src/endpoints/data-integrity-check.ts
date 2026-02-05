@@ -14,7 +14,7 @@ export const dataIntegrityCheckEndpoint: Endpoint = {
   handler: async (req) => {
     try {
       // Check if user is admin
-      if (!req.user?.roles?.includes('admin')) {
+      if (req.user?.role !== 'admin') {
         return Response.json(
           { error: 'Unauthorized. Admin access required.' },
           { status: 403 }
@@ -26,7 +26,7 @@ export const dataIntegrityCheckEndpoint: Endpoint = {
         checkProducts = true,
         checkOrders = true,
         checkAddresses = true,
-        checkMovements = false, // Disabled
+        // checkMovements disabled
         detailed = false
       } = req.json ? await req.json() : {}
 
@@ -103,7 +103,7 @@ export const quickHealthCheckEndpoint: Endpoint = {
           limit: 1,
         })
         checks.database = true
-      } catch (error) {
+      } catch (_error) {
         errors.push('Database connectivity failed')
       }
 
@@ -122,7 +122,7 @@ export const quickHealthCheckEndpoint: Endpoint = {
         } else {
           errors.push('Found inventory with negative quantities')
         }
-      } catch (error) {
+      } catch (_error) {
         errors.push('Inventory check failed')
       }
 
@@ -144,7 +144,7 @@ export const quickHealthCheckEndpoint: Endpoint = {
         } else {
           errors.push('Found orders without required addresses')
         }
-      } catch (error) {
+      } catch (_error) {
         errors.push('Order check failed')
       }
 
@@ -168,7 +168,7 @@ export const quickHealthCheckEndpoint: Endpoint = {
         error: error instanceof Error ? error.message : 'Unknown error',
       }, {
         status: 500,
-        212: 500
+
       })
     }
   },
@@ -185,7 +185,7 @@ export const fixDataIssuesEndpoint: Endpoint = {
   handler: async (req) => {
     try {
       // Check if user is admin
-      if (!req.user?.roles?.includes('admin')) {
+      if (req.user?.role !== 'admin') {
         return Response.json(
           { error: 'Unauthorized. Admin access required.' },
           { status: 403 }

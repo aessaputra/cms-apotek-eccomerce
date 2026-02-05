@@ -19,5 +19,6 @@ import type { Access } from 'payload'
  * ```
  */
 export const adminsOrEditors: Access = ({ req: { user } }) => {
-    return Boolean(user?.roles?.some((role) => ['admin', 'editor'].includes(role)))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return Boolean((user as any)?.role && ['admin', 'editor'].includes((user as any).role))
 }

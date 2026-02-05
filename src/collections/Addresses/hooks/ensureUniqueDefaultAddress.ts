@@ -33,8 +33,8 @@ export const ensureUniqueDefaultAddress: CollectionBeforeChangeHook = async ({
           and: [
             { customer: { equals: customerId } },
             { isDefaultShipping: { equals: true } },
-            ...(operation === 'update' && originalDoc?.id 
-              ? [{ id: { not_equals: originalDoc.id } }] 
+            ...(operation === 'update' && originalDoc?.id
+              ? [{ id: { not_equals: originalDoc.id } }]
               : []
             ),
           ],
@@ -48,7 +48,7 @@ export const ensureUniqueDefaultAddress: CollectionBeforeChangeHook = async ({
         await req.payload.update({
           collection: 'addresses',
           id: address.id,
-          data: { isDefaultShipping: false } as any,
+          data: { isDefaultShipping: false },
           req,
           overrideAccess: true, // Use admin access to ensure we can update
           context: { skipDefaultAddressHook: true }, // Prevent infinite loop
@@ -65,8 +65,8 @@ export const ensureUniqueDefaultAddress: CollectionBeforeChangeHook = async ({
           and: [
             { customer: { equals: customerId } },
             { isDefaultBilling: { equals: true } },
-            ...(operation === 'update' && originalDoc?.id 
-              ? [{ id: { not_equals: originalDoc.id } }] 
+            ...(operation === 'update' && originalDoc?.id
+              ? [{ id: { not_equals: originalDoc.id } }]
               : []
             ),
           ],
@@ -80,7 +80,7 @@ export const ensureUniqueDefaultAddress: CollectionBeforeChangeHook = async ({
         await req.payload.update({
           collection: 'addresses',
           id: address.id,
-          data: { isDefaultBilling: false } as any,
+          data: { isDefaultBilling: false },
           req,
           overrideAccess: true, // Use admin access to ensure we can update
           context: { skipDefaultAddressHook: true }, // Prevent infinite loop

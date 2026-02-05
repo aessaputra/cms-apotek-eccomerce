@@ -6,7 +6,7 @@
  */
 
 import type { Product } from '@/payload-types'
-import type { Payload } from 'payload'
+import type { Payload, Where } from 'payload'
 
 export interface SalesReport {
   period: {
@@ -157,10 +157,10 @@ export async function generateSalesReport(
   }
 ): Promise<SalesReport> {
   try {
-    const { startDate, endDate, periodType = 'custom', includeDetails = true, categoryId } = options
+    const { startDate, endDate, periodType = 'custom', includeDetails: _includeDetails = true, categoryId } = options
 
     // Build order query conditions
-    const orderWhere: any = {
+    const orderWhere: Where = {
       and: [
         { createdAt: { greater_than_equal: startDate } },
         { createdAt: { less_than_equal: endDate } },
@@ -519,7 +519,7 @@ export async function generatePrescriptionTrackingReport(
   }
 ): Promise<PrescriptionTrackingReport> {
   try {
-    const { startDate, endDate, includeDetails = true } = options
+    const { startDate, endDate, includeDetails: _includeDetails = true } = options
 
     // Get prescription orders for the period
     const prescriptionOrdersResult = await payload.find({

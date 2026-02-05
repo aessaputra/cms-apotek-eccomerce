@@ -143,11 +143,11 @@ async function createSingleColumnIndex(
  * NOTE: Temporarily disabled due to Drizzle API compatibility issues
  */
 export async function analyzePerformance(payload: Payload): Promise<{
-  tableStats: any[]
-  indexStats: any[]
+  tableStats: Record<string, unknown>[]
+  indexStats: Record<string, unknown>[]
   recommendations: string[]
-  unusedIndexes: any[]
-  missingIndexes: any[]
+  unusedIndexes: Record<string, unknown>[]
+  missingIndexes: Record<string, unknown>[]
 }> {
   try {
     payload.logger.info('Database performance analysis temporarily disabled')

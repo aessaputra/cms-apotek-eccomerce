@@ -190,7 +190,7 @@ export async function cancelOrderWithStockRestoration(
   movements?: never[]
   error?: string
 }> {
-  const { reason = 'Order cancellation' } = options
+  const { reason: _reason = 'Order cancellation' } = options
 
   try {
     // Get the order
@@ -306,7 +306,7 @@ export async function adjustInventoryWithAudit(
 
   try {
     // Validate user has admin permissions
-    if (!req.user?.roles?.includes('admin')) {
+    if (req.user?.role !== 'admin') {
       throw new TransactionError('Only administrators can adjust inventory')
     }
 
@@ -474,7 +474,7 @@ export async function validateComplexOperation(
           break
         }
 
-        if (!req.user?.roles?.includes('admin')) {
+        if (req.user?.role !== 'admin') {
           errors.push('Only administrators can adjust inventory')
           break
         }

@@ -39,70 +39,20 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
     /**
      * Midtrans-specific group field for transactions
      */
+    // Group field removed to use flat fields defined in Transactions collection override
+
+    /**
+     * Group field configuration (virtual, not stored in DB)
+     * Required by PaymentAdapter interface
+     */
     const group: GroupField = {
-        name: 'midtrans',
+        name: 'midtrans_meta',
         type: 'group',
+        virtual: true,
+        fields: [],
         admin: {
-            condition: (data) => data?.paymentMethod === 'midtrans',
+            hidden: true,
         },
-        fields: [
-            {
-                name: 'orderId',
-                type: 'text',
-                label: 'Midtrans Order ID',
-                admin: {
-                    readOnly: true,
-                },
-            },
-            {
-                name: 'transactionId',
-                type: 'text',
-                label: 'Midtrans Transaction ID',
-                admin: {
-                    readOnly: true,
-                },
-            },
-            {
-                name: 'snapToken',
-                type: 'text',
-                label: 'Snap Token',
-                admin: {
-                    readOnly: true,
-                },
-            },
-            {
-                name: 'redirectUrl',
-                type: 'text',
-                label: 'Redirect URL',
-                admin: {
-                    readOnly: true,
-                },
-            },
-            {
-                name: 'paymentType',
-                type: 'text',
-                label: 'Payment Type',
-                admin: {
-                    readOnly: true,
-                },
-            },
-            {
-                name: 'transactionStatus',
-                type: 'text',
-                label: 'Transaction Status',
-                admin: {
-                    readOnly: true,
-                },
-            },
-            {
-                name: 'response',
-                type: 'json',
-                label: 'Full Response',
-                admin: {
-                    readOnly: true,
-                },
-            },
-        ],
     }
 
     /**
@@ -140,7 +90,7 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
                 // Format: TXN-{transactionId}-{timestamp}
                 const txnIdMatch = midtransOrderId.match(/^TXN-(.+)-\d+$/)
                 if (!txnIdMatch) {
-                    console.warn('[Midtrans] Unexpected order ID format:', midtransOrderId)
+                    req.payload.logger.warn(`[Midtrans] Unexpected order ID format: ${midtransOrderId}`)
                 }
 
                 // Determine new status
@@ -160,12 +110,10 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
                             id: transactionId,
                             data: {
                                 status,
-                                midtrans: {
-                                    transactionId: transaction_id,
-                                    paymentType: payment_type,
-                                    transactionStatus: transaction_status,
-                                    response: notification,
-                                },
+                                midtrans_transaction_id: transaction_id,
+                                midtrans_payment_type: payment_type,
+                                // Cast to any to satisfy Record<string, unknown> constraint of generic JSON type
+                                midtrans_response: notification as any,
                             },
                         })
                         req.payload.logger.info(`[Midtrans] Transaction updated: ${transactionId}, status=${status}`)
@@ -197,7 +145,7 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
         label,
 
         /**
-         * Group field configuration for transactions
+         * Group field configuration
          */
         group,
 
@@ -219,10 +167,15 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
             // Build item details from cart
             const itemDetails: MidtransItemDetail[] = cart.items?.map((item) => {
                 const product = typeof item.product === 'object' ? item.product : null
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const title = (product as any)?.title || (product as any)?.name || 'Product'
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const price = Math.round((product as any)?.price || 0)
+
                 return {
                     id: String(typeof item.product === 'object' ? item.product?.id : item.product),
-                    name: (product as any)?.title || (product as any)?.name || 'Product',
-                    price: Math.round((product as any)?.price || 0),
+                    name: title,
+                    price,
                     quantity: item.quantity || 1,
                 }
             }) || []
@@ -238,10 +191,10 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
                     paymentMethod: 'midtrans',
                     status: 'pending',
                     items: cart.items,
-                    currency,
-                    total: grossAmount,
+                    currency: currency as 'USD',
+                    amount: grossAmount,
                     billingAddress,
-                    shippingAddress,
+                    // valid Transaction does not have shippingAddress in types
                 },
             })
 
@@ -249,11 +202,13 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
             const midtransOrderId = `TXN-${transaction.id}-${timestamp}`
 
             // Build customer details
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const billing = billingAddress as any
             const customerDetails = {
-                first_name: (billingAddress as any)?.firstName || '',
-                last_name: (billingAddress as any)?.lastName || '',
+                first_name: billing?.firstName || '',
+                last_name: billing?.lastName || '',
                 email: customerEmail || '',
-                phone: (billingAddress as any)?.phone || '',
+                phone: billing?.phone || '',
             }
 
             // Build Snap parameters
@@ -279,14 +234,15 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
                 const snapResponse = await client.createTransaction(snapParams)
 
                 // Update transaction with Midtrans data
+                // Update transaction with Midtrans data
                 await req.payload.update({
                     collection: transactionsSlug as 'transactions',
                     id: transaction.id,
                     data: {
-                        midtrans: {
-                            orderId: midtransOrderId,
-                            snapToken: snapResponse.token,
-                            redirectUrl: snapResponse.redirect_url,
+                        midtrans_order_id: midtransOrderId,
+                        midtrans_response: {
+                            snap_token: snapResponse.token,
+                            redirect_url: snapResponse.redirect_url,
                         },
                     },
                 })
@@ -318,8 +274,8 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
         /**
          * Confirm order - creates order after successful payment
          */
-        confirmOrder: async ({ data, ordersSlug, req, transactionsSlug, cartsSlug, customersSlug }) => {
-            const { customerEmail, ...additionalData } = data
+        confirmOrder: async ({ data, ordersSlug, req, transactionsSlug, cartsSlug, customersSlug: _customersSlug }) => {
+            const { customerEmail: _customerEmail, ...additionalData } = data
 
             // Get transaction ID from data (passed from frontend after Snap callback)
             const transactionId = additionalData.transactionId as string
@@ -339,32 +295,29 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
             }
 
             // Verify payment status with Midtrans
-            const midtransData = (transaction as any).midtrans
-            if (midtransData?.orderId) {
+            const midtransOrderId = transaction.midtrans_order_id
+            if (midtransOrderId) {
                 try {
-                    const status = await client.getTransactionStatus(midtransData.orderId)
+                    const status = await client.getTransactionStatus(midtransOrderId)
 
                     if (!isSuccessfulTransaction(status.transaction_status)) {
                         throw new Error(`Payment not successful. Status: ${status.transaction_status}`)
                     }
 
                     // Update transaction with latest status
+                    // Update transaction with latest status
                     await req.payload.update({
                         collection: (transactionsSlug || 'transactions') as 'transactions',
                         id: transactionId,
                         data: {
                             status: 'succeeded',
-                            midtrans: {
-                                ...midtransData,
-                                transactionId: status.transaction_id,
-                                paymentType: status.payment_type,
-                                transactionStatus: status.transaction_status,
-                                response: status,
-                            },
+                            midtrans_transaction_id: status.transaction_id,
+                            midtrans_payment_type: status.payment_type,
+                            midtrans_response: status as any,
                         },
                     })
                 } catch (statusError) {
-                    console.error('[Midtrans] Failed to verify payment status:', statusError)
+                    req.payload.logger.error(`[Midtrans] Failed to verify payment status: ${statusError}`)
                     throw new Error('Failed to verify payment status with Midtrans')
                 }
             }
@@ -375,12 +328,11 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
                 data: {
                     customer: transaction.customer,
                     items: transaction.items,
-                    total: transaction.total,
+                    amount: transaction.amount || 0,
                     currency: transaction.currency,
-                    billingAddress: transaction.billingAddress,
-                    shippingAddress: transaction.shippingAddress,
-                    status: 'pending',
-                    transactions: [transactionId],
+                    shippingAddress: transaction.billingAddress, // Fallback as Transaction has no shippingAddress
+                    status: 'processing',
+                    transactions: [Number(transactionId)],
                 },
             })
 
@@ -410,16 +362,16 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
                         })
                     }
                 } catch (cartError) {
-                    console.warn('[Midtrans] Failed to clear cart:', cartError)
+                    req.payload.logger.warn(`[Midtrans] Failed to clear cart: ${cartError}`)
                 }
             }
 
             req.payload.logger.info(`[Midtrans] Order confirmed: orderId=${order.id}, transactionId=${transactionId}`)
 
             return {
-                message: 'Order confirmed successfully',
-                orderID: order.id,
-                transactionID: transactionId,
+                message: 'Order confirmed',
+                orderID: typeof order.id === 'string' ? parseInt(order.id) : order.id,
+                transactionID: (transactionId && !isNaN(Number(transactionId))) ? Number(transactionId) : 0
             }
         },
     }

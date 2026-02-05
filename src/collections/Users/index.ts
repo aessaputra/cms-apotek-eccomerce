@@ -11,6 +11,7 @@ import { preventInactiveLogin } from './hooks/preventInactiveLogin'
 
 export const Users: CollectionConfig = {
   slug: 'users',
+  dbName: 'profiles', // Strict mapping to Supabase 'profiles' table
   access: {
     admin: ({ req: { user } }) => checkRole(['admin'], user),
     create: publicAccess,
@@ -20,8 +21,8 @@ export const Users: CollectionConfig = {
   },
   admin: {
     group: 'Users',
-    defaultColumns: ['name', 'email', 'roles'],
-    useAsTitle: 'name',
+    defaultColumns: ['full_name', 'email', 'role'],
+    useAsTitle: 'full_name',
   },
   auth: {
     tokenExpiration: 1209600,
@@ -31,7 +32,8 @@ export const Users: CollectionConfig = {
   },
   fields: [
     {
-      name: 'name',
+      name: 'full_name', // Matches schema 'full_name'
+      label: 'Full Name',
       type: 'text',
     },
     {
@@ -57,15 +59,15 @@ export const Users: CollectionConfig = {
       },
     },
     {
-      name: 'roles',
+      name: 'role', // Matches schema 'role' text
       type: 'select',
       access: {
         create: adminOnlyFieldAccess,
         read: adminOnlyFieldAccess,
         update: adminOnlyFieldAccess,
       },
-      defaultValue: ['customer'],
-      hasMany: true,
+      defaultValue: 'customer',
+      // hasMany: true, // Schema says 'role text', single value.
       hooks: {
         beforeChange: [ensureFirstUserIsAdmin],
       },
@@ -79,7 +81,7 @@ export const Users: CollectionConfig = {
           value: 'customer',
         },
       ],
-      saveToJWT: true, // Include roles in JWT for efficient access control
+      saveToJWT: true,
     },
     {
       name: 'orders',
@@ -92,13 +94,13 @@ export const Users: CollectionConfig = {
       },
     },
     {
-      name: 'cart',
+      name: 'cart_items',
       type: 'join',
-      collection: 'carts',
-      on: 'customer',
+      collection: 'cart-items',
+      on: 'user_id',
       admin: {
-        allowCreate: false,
-        defaultColumns: ['id', 'createdAt', 'total', 'currency', 'items'],
+        allowCreate: true,
+        defaultColumns: ['product_id', 'quantity'],
       },
     },
     {

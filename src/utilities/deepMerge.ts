@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 
 /**
  * Simple object check.
@@ -6,7 +6,7 @@
  * @returns {boolean}
  */
 export function isObject(item: unknown): boolean {
-  return item && typeof item === 'object' && !Array.isArray(item)
+  return Boolean(item && typeof item === 'object' && !Array.isArray(item))
 }
 
 /**
@@ -14,18 +14,24 @@ export function isObject(item: unknown): boolean {
  * @param target
  * @param ...sources
  */
-export function deepMerge<T, R>(target: T, source: R): T {
-  const output = { ...target }
+export function deepMerge<T extends object, R extends object>(target: T, source: R): T & R {
+  const output = { ...target } as T & R
   if (isObject(target) && isObject(source)) {
     Object.keys(source).forEach((key) => {
-      if (isObject(source[key])) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sourceValue = (source as any)[key]
+
+      if (isObject(sourceValue)) {
         if (!(key in target)) {
-          Object.assign(output, { [key]: source[key] })
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          Object.assign(output, { [key]: sourceValue })
         } else {
-          output[key] = deepMerge(target[key], source[key])
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (output as any)[key] = deepMerge((target as any)[key], sourceValue)
         }
       } else {
-        Object.assign(output, { [key]: source[key] })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Object.assign(output, { [key]: sourceValue })
       }
     })
   }

@@ -1,10 +1,10 @@
 import {
-    getOrdersRequiringPrescriptionVerification,
-    removePrescriptionVerification,
-    validateOrderPrescription,
-    verifyOrderPrescription,
+  getOrdersRequiringPrescriptionVerification,
+  removePrescriptionVerification,
+  validateOrderPrescription,
+  verifyOrderPrescription,
 } from '@/utilities/prescriptionValidation'
-import type { Endpoint } from 'payload'
+import type { Endpoint, Where } from 'payload'
 import { APIError } from 'payload'
 
 /**
@@ -26,7 +26,7 @@ export const pendingPrescriptionOrders: Endpoint = {
         throw new APIError('Authentication required', 401)
       }
 
-      if (!req.user.roles?.includes('admin')) {
+      if (req.user.role !== 'admin') {
         throw new APIError('Admin access required', 403)
       }
 
@@ -47,10 +47,10 @@ export const pendingPrescriptionOrders: Endpoint = {
         totalOrders: orders.length,
         unverifiedOrders: orders.filter(order => !order.isVerified).length,
         verifiedOrders: orders.filter(order => order.isVerified).length,
-        averageWaitingDays: orders.length > 0 
+        averageWaitingDays: orders.length > 0
           ? Math.round(orders.reduce((sum, order) => sum + order.daysWaiting, 0) / orders.length)
           : 0,
-        oldestWaitingDays: orders.length > 0 
+        oldestWaitingDays: orders.length > 0
           ? Math.max(...orders.map(order => order.daysWaiting))
           : 0,
       }
@@ -68,7 +68,7 @@ export const pendingPrescriptionOrders: Endpoint = {
       })
     } catch (error) {
       req.payload.logger.error(`Pending prescription orders error: ${error}`)
-      
+
       if (error instanceof APIError) {
         return Response.json(
           { success: false, error: error.message },
@@ -105,8 +105,8 @@ export const validatePrescription: Endpoint = {
       }
 
       // Users can validate their own orders, admins can validate any order
-      const isAdmin = req.user.roles?.includes('admin')
-      
+      const isAdmin = req.user.role === 'admin'
+
       if (!isAdmin) {
         // Check if user owns the order
         const order = await req.payload.findByID({
@@ -138,7 +138,7 @@ export const validatePrescription: Endpoint = {
       })
     } catch (error) {
       req.payload.logger.error(`Prescription validation error for order ${orderId}: ${error}`)
-      
+
       if (error instanceof APIError) {
         return Response.json(
           { success: false, error: error.message },
@@ -174,12 +174,12 @@ export const verifyPrescription: Endpoint = {
         throw new APIError('Authentication required', 401)
       }
 
-      if (!req.user.roles?.includes('admin')) {
+      if (req.user.role !== 'admin') {
         throw new APIError('Admin access required - only administrators can verify prescriptions', 403)
       }
 
-      // Parse request body
-      let body: any = {}
+      // Body parser for JSON
+      let body: Record<string, unknown> = {}
       try {
         if (req.json) {
           body = await req.json()
@@ -187,7 +187,7 @@ export const verifyPrescription: Endpoint = {
       } catch {
         // Ignore parsing errors, use empty object
       }
-      const { notes } = body
+      const notes = typeof body.notes === 'string' ? body.notes : undefined
 
       // Verify the prescription
       const result = await verifyOrderPrescription(req.payload, orderId, req.user.id, notes)
@@ -210,7 +210,7 @@ export const verifyPrescription: Endpoint = {
       }
     } catch (error) {
       req.payload.logger.error(`Prescription verification error for order ${orderId}: ${error}`)
-      
+
       if (error instanceof APIError) {
         return Response.json(
           { success: false, error: error.message },
@@ -246,12 +246,12 @@ export const removePrescriptionVerify: Endpoint = {
         throw new APIError('Authentication required', 401)
       }
 
-      if (!req.user.roles?.includes('admin')) {
+      if (req.user.role !== 'admin') {
         throw new APIError('Admin access required - only administrators can modify prescription verification', 403)
       }
 
       // Parse request body for reason
-      let body: any = {}
+      let body: Record<string, unknown> = {}
       try {
         if (req.json) {
           body = await req.json()
@@ -259,7 +259,7 @@ export const removePrescriptionVerify: Endpoint = {
       } catch {
         // Ignore parsing errors, use empty object
       }
-      const { reason } = body
+      const reason = typeof body.reason === 'string' ? body.reason : undefined
 
       // Remove prescription verification
       const result = await removePrescriptionVerification(req.payload, orderId, req.user.id, reason)
@@ -282,7 +282,7 @@ export const removePrescriptionVerify: Endpoint = {
       }
     } catch (error) {
       req.payload.logger.error(`Remove prescription verification error for order ${orderId}: ${error}`)
-      
+
       if (error instanceof APIError) {
         return Response.json(
           { success: false, error: error.message },
@@ -312,7 +312,7 @@ export const prescriptionStats: Endpoint = {
         throw new APIError('Authentication required', 401)
       }
 
-      if (!req.user.roles?.includes('admin')) {
+      if (req.user.role !== 'admin') {
         throw new APIError('Admin access required', 403)
       }
 
@@ -321,7 +321,7 @@ export const prescriptionStats: Endpoint = {
       const endDate = req.query.endDate as string
 
       // Build date filter
-      const dateFilter: any[] = []
+      const dateFilter: Where[] = []
       if (startDate) {
         dateFilter.push({ createdAt: { greater_than_equal: startDate } })
       }
@@ -348,7 +348,7 @@ export const prescriptionStats: Endpoint = {
           where: { and: whereConditions },
           limit: 1,
         }),
-        
+
         // Verified prescription orders
         req.payload.find({
           collection: 'orders',
@@ -360,7 +360,7 @@ export const prescriptionStats: Endpoint = {
           },
           limit: 1,
         }),
-        
+
         // Unverified prescription orders
         req.payload.find({
           collection: 'orders',
@@ -372,7 +372,7 @@ export const prescriptionStats: Endpoint = {
           },
           limit: 1,
         }),
-        
+
         // Pending prescription orders
         req.payload.find({
           collection: 'orders',
@@ -385,7 +385,7 @@ export const prescriptionStats: Endpoint = {
           },
           limit: 1,
         }),
-        
+
         // Processing prescription orders
         req.payload.find({
           collection: 'orders',
@@ -422,25 +422,25 @@ export const prescriptionStats: Endpoint = {
         const createdAt = new Date(order.createdAt)
         const updatedAt = new Date(order.updatedAt)
         const verificationTime = updatedAt.getTime() - createdAt.getTime()
-        
+
         if (verificationTime > 0) {
           totalVerificationTime += verificationTime
           verificationCount++
         }
       }
 
-      const averageVerificationTimeHours = verificationCount > 0 
+      const averageVerificationTimeHours = verificationCount > 0
         ? Math.round((totalVerificationTime / verificationCount) / (1000 * 60 * 60))
         : 0
 
       // Get top verifiers
       const verifierStats: Record<string, { count: number; name: string }> = {}
-      
+
       for (const order of recentVerifications.docs) {
         if (order.verified_by) {
           const verifierId = typeof order.verified_by === 'object' ? order.verified_by.id : order.verified_by
-          const verifierName = typeof order.verified_by === 'object' 
-            ? (order.verified_by.name || order.verified_by.email)
+          const verifierName = typeof order.verified_by === 'object'
+            ? (order.verified_by.full_name || order.verified_by.email)
             : String(verifierId)
 
           if (!verifierStats[verifierId]) {
@@ -466,7 +466,7 @@ export const prescriptionStats: Endpoint = {
           unverifiedOrders: unverifiedOrdersResult.totalDocs,
           pendingVerification: pendingOrdersResult.totalDocs,
           processingOrders: processingOrdersResult.totalDocs,
-          verificationRate: totalPrescriptionOrdersResult.totalDocs > 0 
+          verificationRate: totalPrescriptionOrdersResult.totalDocs > 0
             ? ((verifiedOrdersResult.totalDocs / totalPrescriptionOrdersResult.totalDocs) * 100).toFixed(1)
             : '0.0',
         },
@@ -491,7 +491,7 @@ export const prescriptionStats: Endpoint = {
       })
     } catch (error) {
       req.payload.logger.error(`Prescription stats error: ${error}`)
-      
+
       if (error instanceof APIError) {
         return Response.json(
           { success: false, error: error.message },

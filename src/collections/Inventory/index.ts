@@ -13,6 +13,7 @@ import { checkLowStockLevels, updateCartsOnStockChange } from './hooks'
  */
 export const Inventory: CollectionConfig = {
   slug: 'inventory',
+  dbName: 'inventory',
   admin: {
     useAsTitle: 'id',
     defaultColumns: ['product', 'quantity', 'low_stock_threshold', 'updatedAt'],

@@ -1,4 +1,4 @@
-import type { Payload } from 'payload'
+import type { Payload, Where } from 'payload'
 
 /**
  * Prescription validation utilities
@@ -70,7 +70,7 @@ export async function validateOrderPrescription(
       for (const item of order.items) {
         if (item && typeof item === 'object' && 'product' in item) {
           const product = typeof item.product === 'object' ? item.product : null
-          
+
           if (product) {
             const productInfo = {
               productId: product.id,
@@ -108,9 +108,9 @@ export async function validateOrderPrescription(
             verificationDetails = {
               verifiedBy: verifier.id,
               verifiedAt: order.updatedAt,
-              verifierName: verifier.name || verifier.email,
+              verifierName: verifier.full_name || verifier.email,
             }
-          } catch (verifierError) {
+          } catch (_verifierError) {
             warnings.push('Could not retrieve verifier information')
           }
         }
@@ -178,7 +178,7 @@ export async function verifyOrderPrescription(
       id: verifierId,
     })
 
-    if (!verifier || !verifier.roles?.includes('admin')) {
+    if (!verifier || verifier.role !== 'admin') {
       return {
         success: false,
         message: 'Only administrators can verify prescriptions',
@@ -209,7 +209,7 @@ export async function verifyOrderPrescription(
 
     // Validate that the order requires prescription
     const prescriptionValidation = await validateOrderPrescription(payload, orderId)
-    
+
     if (!prescriptionValidation.requiresPrescription) {
       return {
         success: false,
@@ -252,7 +252,7 @@ export async function verifyOrderPrescription(
 
     return {
       success: true,
-      message: `Prescription verified successfully by ${verifier.name || verifier.email}`,
+      message: `Prescription verified successfully by ${verifier.full_name || verifier.email}`,
       orderId,
       verifiedBy: verifierId,
       verifiedAt,
@@ -290,7 +290,7 @@ export async function removePrescriptionVerification(
       id: adminId,
     })
 
-    if (!admin || !admin.roles?.includes('admin')) {
+    if (!admin || admin.role !== 'admin') {
       return {
         success: false,
         message: 'Only administrators can modify prescription verification',
@@ -350,7 +350,7 @@ export async function removePrescriptionVerification(
       data: {
         prescription_verified: false,
         verified_by: undefined,
-        prescription_notes: reason 
+        prescription_notes: reason
           ? `${order.prescription_notes || ''}\n\nVerification removed by ${admin.email}: ${reason}`.trim()
           : order.prescription_notes,
       },
@@ -363,7 +363,7 @@ export async function removePrescriptionVerification(
 
     return {
       success: true,
-      message: `Prescription verification removed by ${admin.name || admin.email}`,
+      message: `Prescription verification removed by ${admin.full_name || admin.email}`,
       orderId,
       verifiedBy: adminId,
       verifiedAt: removedAt,
@@ -413,7 +413,7 @@ export async function getOrdersRequiringPrescriptionVerification(
     const { limit = 50, status = ['pending', 'confirmed'], includeVerified = false } = options
 
     // Build query conditions
-    const whereConditions: any[] = [
+    const whereConditions: Where[] = [
       { prescription_required: { equals: true } },
     ]
 
@@ -454,7 +454,7 @@ export async function getOrdersRequiringPrescriptionVerification(
 
       // Get customer info
       const customer = typeof order.customer === 'object' ? order.customer : null
-      const customerName = customer?.name || customer?.email || 'Unknown Customer'
+      const customerName = customer?.full_name || customer?.email || 'Unknown Customer'
       const customerEmail = customer?.email || 'unknown@example.com'
 
       return {

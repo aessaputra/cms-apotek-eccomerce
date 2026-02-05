@@ -15,7 +15,6 @@ export const validateInventoryIntegrity: CollectionBeforeChangeHook = async ({
   data,
   req,
   operation,
-  originalDoc,
 }) => {
   // Skip validation during seeding or if explicitly disabled
   if (req.context?.skipValidation || req.context?.disableRevalidate) {
@@ -73,7 +72,7 @@ export const validateAddressConstraints: CollectionBeforeChangeHook = async ({
 
   try {
     // Auto-assign customer if not admin
-    if (!req.user?.roles?.includes('admin') && !data.customer) {
+    if (req.user?.role !== 'admin' && !data.customer) {
       data.customer = req.user?.id
     }
 
@@ -95,7 +94,7 @@ export const validateAddressConstraints: CollectionBeforeChangeHook = async ({
       // But schema says customer required? Let's check schema.
       // Assuming customer is checking elsewhere or let it fail if required.
       // But here we need customer ID for default check.
-      if (operation === 'create' && !req.user?.roles?.includes('admin')) {
+      if (operation === 'create' && req.user?.role !== 'admin') {
         throw new Error('Customer is required for address')
       }
     }
@@ -177,7 +176,7 @@ export const validateOrderIntegrity: CollectionBeforeChangeHook = async ({
 
   try {
     // Auto-assign customer if not admin
-    if (!req.user?.roles?.includes('admin') && !data.customer) {
+    if (req.user?.role !== 'admin' && !data.customer) {
       data.customer = req.user?.id
     }
 
@@ -268,8 +267,7 @@ export const validateOrderIntegrity: CollectionBeforeChangeHook = async ({
 export const validateProductIntegrity: CollectionBeforeChangeHook = async ({
   data,
   req,
-  operation,
-  title
+  operation: _operation
 }) => {
   // Skip validation during seeding
   if (req.context?.skipValidation || req.context?.disableRevalidate) {
@@ -324,7 +322,7 @@ export const validateProductIntegrity: CollectionBeforeChangeHook = async ({
 export const logDataIntegrityIssues: CollectionAfterChangeHook = async ({
   doc,
   req,
-  operation,
+  operation: _operation,
   collection,
 }) => {
   // Skip during seeding

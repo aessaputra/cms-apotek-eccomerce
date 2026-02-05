@@ -14,10 +14,12 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
+import { CartItems } from '@/collections/CartItems'
 import { Categories } from '@/collections/Categories'
 import { Inventory } from '@/collections/Inventory'
 import { Media } from '@/collections/Media'
-import { Pages } from '@/collections/Pages'
+
+import { ProductImages } from '@/collections/ProductImages'
 import { Users } from '@/collections/Users'
 import { pharmacyEndpoints } from '@/endpoints'
 import { plugins } from './plugins'
@@ -37,7 +39,7 @@ export default buildConfig({
     },
     user: Users.slug,
   },
-  collections: [Users, Pages, Categories, Media, Inventory],
+  collections: [Users, CartItems, Categories, Media, Inventory, ProductImages],
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
@@ -52,7 +54,7 @@ export default buildConfig({
         OrderedListFeature(),
         UnorderedListFeature(),
         LinkFeature({
-          enabledCollections: ['pages'],
+          enabledCollections: [],
           fields: ({ defaultFields }) => {
             const defaultFieldsWithoutUrl = defaultFields.filter((field) => {
               if ('name' in field && field.name === 'url') return false

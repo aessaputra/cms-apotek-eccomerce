@@ -29,15 +29,15 @@ export const validateAdminOperation = (req: PayloadRequest, operation: string): 
     throw new Error('Account is inactive')
   }
 
-  // Validate roles structure
-  if (!user.roles || !Array.isArray(user.roles)) {
-    payload.logger.error(`User ${user.id} has invalid roles structure: ${JSON.stringify(user.roles)}`)
-    throw new Error('Invalid user roles configuration')
+  // Validate role structure
+  if (!user.role || typeof user.role !== 'string') {
+    payload.logger.error(`User ${user.id} has invalid role structure: ${JSON.stringify(user.role)}`)
+    throw new Error('Invalid user role configuration')
   }
 
   // Check for admin role
   const hasAdminRole = checkRole(['admin'], user)
-  
+
   if (!hasAdminRole) {
     payload.logger.warn(`Administrative operation '${operation}' denied for user ${user.id} - admin role required`)
     throw new Error('Administrative privileges required')
@@ -45,7 +45,7 @@ export const validateAdminOperation = (req: PayloadRequest, operation: string): 
 
   // Log successful validation
   payload.logger.info(`Administrative operation '${operation}' authorized for user ${user.id}`)
-  
+
   return true
 }
 
@@ -63,20 +63,20 @@ export const validateAdminOperation = (req: PayloadRequest, operation: string): 
  * @returns true if user is authorized, throws error otherwise
  */
 export const validateInventoryOperation = (
-  req: PayloadRequest, 
-  operation: string, 
+  req: PayloadRequest,
+  operation: string,
   inventoryId?: string
 ): boolean => {
   // First validate basic admin operation
   validateAdminOperation(req, operation)
 
   // Additional inventory-specific logging
-  const logMessage = inventoryId 
+  const logMessage = inventoryId
     ? `Inventory operation '${operation}' on item ${inventoryId} authorized for user ${req.user?.id}`
     : `Inventory operation '${operation}' authorized for user ${req.user?.id}`
-  
+
   req.payload.logger.info(logMessage)
-  
+
   return true
 }
 
@@ -94,19 +94,19 @@ export const validateInventoryOperation = (
  * @returns true if user is authorized, throws error otherwise
  */
 export const validateAuditOperation = (
-  req: PayloadRequest, 
-  operation: string, 
+  req: PayloadRequest,
+  operation: string,
   movementId?: string
 ): boolean => {
   // First validate basic admin operation
   validateAdminOperation(req, operation)
 
   // Enhanced logging for audit operations (for security compliance)
-  const logMessage = movementId 
+  const logMessage = movementId
     ? `Audit operation '${operation}' on movement ${movementId} by user ${req.user?.id}`
     : `Audit operation '${operation}' by user ${req.user?.id}`
-  
+
   req.payload.logger.info(logMessage)
-  
+
   return true
 }

@@ -216,6 +216,7 @@ export async function validateProductAvailability(
       id: productId,
     })
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!product || !(product as any).is_active) {
       return {
         isAvailable: false,
@@ -227,16 +228,16 @@ export async function validateProductAvailability(
 
     let message = 'Available'
     if (!stockResult.isAvailable) {
-      message = stockResult.availableStock === 0
+      message = stockResult.quantity === 0
         ? 'Out of stock'
-        : `Only ${stockResult.availableStock} available`
-    } else if (stockResult.availableStock < quantity * 2) {
+        : `Only ${stockResult.quantity} available`
+    } else if (stockResult.quantity < quantity * 2) {
       message = 'Limited stock available'
     }
 
     return {
       isAvailable: stockResult.isAvailable,
-      availableQuantity: stockResult.availableStock,
+      availableQuantity: stockResult.quantity,
       message,
       requiresPrescription: product.requires_prescription || false,
     }

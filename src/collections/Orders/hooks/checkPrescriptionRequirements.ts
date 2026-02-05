@@ -26,7 +26,7 @@ export const checkPrescriptionRequirements: CollectionBeforeChangeHook<Order> = 
     // Check each item in the order to see if any require prescription
     for (const item of data.items) {
       if (item && typeof item === 'object' && 'product' in item) {
-        const productId = typeof item.product === 'object' && item.product !== null 
+        const productId = typeof item.product === 'object' && item.product !== null
           ? (typeof item.product.id === 'string' ? item.product.id : String(item.product.id))
           : String(item.product)
 
@@ -69,7 +69,7 @@ export const checkPrescriptionRequirements: CollectionBeforeChangeHook<Order> = 
         // If prescription is being verified for the first time
         if (!wasVerified && isNowVerified) {
           // Only admins can verify prescriptions
-          if (!user?.roles?.includes('admin')) {
+          if (user?.role !== 'admin') {
             throw new Error('Only administrators can verify prescriptions')
           }
 
@@ -80,7 +80,7 @@ export const checkPrescriptionRequirements: CollectionBeforeChangeHook<Order> = 
         // If prescription verification is being removed
         if (wasVerified && !isNowVerified) {
           // Only admins can remove verification
-          if (!user?.roles?.includes('admin')) {
+          if (user?.role !== 'admin') {
             throw new Error('Only administrators can modify prescription verification')
           }
 

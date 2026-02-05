@@ -23,7 +23,7 @@ export interface OrderProcessingResult {
   success: boolean
   orderId: string | number
   message: string
-  stockMovements?: any[] // Simplified
+  stockMovements?: unknown[]
   errors?: string[]
 }
 
@@ -88,20 +88,20 @@ export async function validateOrder(
           productId: item.productId,
           productName: item.productName,
           requestedQuantity: item.quantity,
-          availableQuantity: stockResult.availableStock,
+          availableQuantity: stockResult.quantity,
           isAvailable: stockResult.isAvailable,
         })
 
         if (!stockResult.isAvailable) {
           errors.push(
-            `Insufficient stock for "${item.productName}": requested ${item.quantity}, available ${stockResult.availableStock}`
+            `Insufficient stock for "${item.productName}": requested ${item.quantity}, available ${stockResult.quantity}`
           )
         }
 
         // Check for low stock warnings
-        if (stockResult.isAvailable && stockResult.availableStock < item.quantity * 2) {
+        if (stockResult.isAvailable && stockResult.quantity < item.quantity * 2) {
           warnings.push(
-            `Low stock warning for "${item.productName}": only ${stockResult.availableStock} remaining after this order`
+            `Low stock warning for "${item.productName}": only ${stockResult.quantity} remaining after this order`
           )
         }
       }
@@ -153,7 +153,7 @@ export async function validateOrder(
 export async function processOrderConfirmation(
   payload: Payload,
   orderId: string | number,
-  userId?: string | number
+  _userId?: string | number
 ): Promise<OrderProcessingResult> {
   try {
     // First validate the order
@@ -262,8 +262,8 @@ export async function processOrderConfirmation(
 export async function cancelOrder(
   payload: Payload,
   orderId: string | number,
-  reason?: string,
-  userId?: string | number
+  _reason?: string,
+  _userId?: string | number
 ): Promise<OrderProcessingResult> {
   try {
     // Get the order
@@ -295,7 +295,7 @@ export async function cancelOrder(
     // Restore stock based on order items
     if (order.items) {
       for (const item of order.items) {
-        const productId = typeof item.product === 'object' ? item.product.id : item.product
+        const productId = typeof item.product === 'object' && item.product !== null ? item.product.id : item.product
         const quantityToRestore = item.quantity || 0
 
         if (quantityToRestore > 0) {
@@ -364,7 +364,7 @@ export async function getOrderProcessingStatus(
   currentStatus: string
   canBeCancelled: boolean
   canBeProcessed: boolean
-  stockMovements: any[]
+  stockMovements: unknown[]
   validationResult: OrderValidationResult
 }> {
   try {
@@ -382,13 +382,13 @@ export async function getOrderProcessingStatus(
     const validationResult = await validateOrder(payload, orderId)
 
     // stockMovements effectively unused/empty now
-    const stockMovements: any[] = []
+    const stockMovements: unknown[] = []
 
     return {
       orderId,
       currentStatus: order.status || 'unknown',
       canBeCancelled: ['pending', 'confirmed', 'processing'].includes(order.status || ''),
-      canBeProcessed: (order.status as any) === 'pending' && validationResult.isValid,
+      canBeProcessed: (order.status as string) === 'pending' && validationResult.isValid,
       stockMovements,
       validationResult,
     }

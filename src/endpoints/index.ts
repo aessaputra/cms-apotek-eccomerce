@@ -30,50 +30,50 @@ import {
     prescriptionTrackingReportEndpoint,
     salesReport,
 } from './inventory-reports'
-import { testEndpoint } from './test-endpoints'
+
 
 export const pharmacyEndpoints = [
-  // Test endpoint to verify endpoints are working
-  testEndpoint,
-  
-  // Database optimization endpoints
-  optimizeDatabase,
-  getPerformanceReport,
-  vacuumDatabase,
-  analyzeIndexes,
-  enableStats,
-  getMetrics,
-  
-  // Cache management endpoints
-  getCacheStats,
-  clearAllCache,
-  clearSpecificCache,
-  invalidateProductCache,
-  warmupCaches,
-  getCacheHealth,
-  
-  // Inventory reporting endpoints
-  lowStockReport,
-  expiringProductsReport,
-  inventoryStatusReport,
-  inventoryMovementsReport,
-  
-  // Advanced reporting endpoints
-  salesReport,
-  inventoryStatusReportEndpoint,
-  prescriptionTrackingReportEndpoint,
-  financialReport,
-  
-  // Data integrity and health check endpoints
-  // dataIntegrityCheckEndpoint,
-  // quickHealthCheckEndpoint,
-  // fixDataIssuesEndpoint,
-  
-  // Note: Other endpoints are commented out due to import path issues
-  // They can be uncommented once the utility imports are resolved
-  // The endpoint files are created and ready to use:
-  // - stock-monitoring.ts (checkProductStock, checkBulkStock, stockMonitor, stockAlerts)  
-  // - prescription-verification.ts (pendingPrescriptionOrders, validatePrescription, verifyPrescription, removePrescriptionVerify, prescriptionStats)
+    // Test endpoint to verify endpoints are working
+
+
+    // Database optimization endpoints
+    optimizeDatabase,
+    getPerformanceReport,
+    vacuumDatabase,
+    analyzeIndexes,
+    enableStats,
+    getMetrics,
+
+    // Cache management endpoints
+    getCacheStats,
+    clearAllCache,
+    clearSpecificCache,
+    invalidateProductCache,
+    warmupCaches,
+    getCacheHealth,
+
+    // Inventory reporting endpoints
+    lowStockReport,
+    expiringProductsReport,
+    inventoryStatusReport,
+    inventoryMovementsReport,
+
+    // Advanced reporting endpoints
+    salesReport,
+    inventoryStatusReportEndpoint,
+    prescriptionTrackingReportEndpoint,
+    financialReport,
+
+    // Data integrity and health check endpoints
+    // dataIntegrityCheckEndpoint,
+    // quickHealthCheckEndpoint,
+    // fixDataIssuesEndpoint,
+
+    // Note: Other endpoints are commented out due to import path issues
+    // They can be uncommented once the utility imports are resolved
+    // The endpoint files are created and ready to use:
+    // - stock-monitoring.ts (checkProductStock, checkBulkStock, stockMonitor, stockAlerts)  
+    // - prescription-verification.ts (pendingPrescriptionOrders, validatePrescription, verifyPrescription, removePrescriptionVerify, prescriptionStats)
 ]
 
 // Individual endpoint exports for direct use

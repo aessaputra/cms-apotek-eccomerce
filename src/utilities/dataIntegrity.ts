@@ -226,10 +226,10 @@ export async function validateAddressIntegrity(
  * Validates inventory movement audit trail integrity
  * DEPRECATED - InventoryMovements collection removed
  */
-export async function validateInventoryMovementIntegrity(
-  payload: Payload,
-  movementId: string | number
-): Promise<{ valid: boolean; errors: string[] }> {
+export const validateInventoryMovementIntegrity = async (
+  _payload: Payload,
+  _movementId: string | number
+): Promise<{ valid: boolean; errors: string[] }> => {
   // Stub
   return { valid: true, errors: [] }
 }

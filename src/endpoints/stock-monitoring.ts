@@ -27,25 +27,28 @@ export const checkProductStock: Endpoint = {
       // Public endpoint - no authentication required for basic stock check
       // But provide more details for authenticated users
       const isAuthenticated = !!req.user
-      const isAdmin = req.user?.roles?.includes('admin')
+      const isAdmin = req.user?.role === 'admin'
+
+      // filters unused
+      // const filters: Where[] = []
 
       if (isAuthenticated) {
         // Detailed stock information for authenticated users
         const stockResult = await checkStockAvailability(req.payload, productId, quantity)
 
-        const response: any = {
+        const response: Record<string, any> = {
           success: true,
           data: {
             productId,
             isAvailable: stockResult.isAvailable,
-            availableStock: stockResult.availableStock,
+            availableStock: stockResult.quantity,
             requestedQuantity: quantity,
           },
         }
 
         // Additional details for admin users
         if (isAdmin) {
-          response.data.totalStock = stockResult.totalStock
+          response.data.totalStock = stockResult.quantity
           response.data.reservedStock = 0 // Removed reserved logic
         }
 
@@ -97,7 +100,7 @@ export const checkBulkStock: Endpoint = {
       }
 
       // Parse request body
-      let body: any = {}
+      let body: Record<string, unknown> = {}
       try {
         if (req.json) {
           body = await req.json()
@@ -134,9 +137,9 @@ export const checkBulkStock: Endpoint = {
       // Check bulk stock availability
       const bulkResult = await checkBulkStockAvailability(req.payload, validItems)
 
-      const isAdmin = req.user.roles?.includes('admin')
+      const isAdmin = req.user.role === 'admin'
 
-      const response: any = {
+      const response: Record<string, any> = {
         success: true,
         data: {
           allAvailable: bulkResult.allAvailable,
@@ -185,7 +188,7 @@ export const stockMonitor: Endpoint = {
         throw new APIError('Authentication required', 401)
       }
 
-      if (!req.user.roles?.includes('admin')) {
+      if (req.user.role !== 'admin') {
         throw new APIError('Admin access required', 403)
       }
 
@@ -304,7 +307,7 @@ export const stockAlerts: Endpoint = {
         throw new APIError('Authentication required', 401)
       }
 
-      if (!req.user.roles?.includes('admin')) {
+      if (req.user.role !== 'admin') {
         throw new APIError('Admin access required', 403)
       }
 

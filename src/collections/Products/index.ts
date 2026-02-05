@@ -1,6 +1,3 @@
-import { CallToAction } from '@/blocks/CallToAction/config'
-import { Content } from '@/blocks/Content/config'
-import { MediaBlock } from '@/blocks/MediaBlock/config'
 import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
 import {
@@ -17,7 +14,7 @@ import {
   InlineToolbarFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
-import { DefaultDocumentIDType, slugField, Where } from 'payload'
+import { slugField } from 'payload'
 import {
   calculateProductAvailability,
   validatePharmacyFields
@@ -25,6 +22,7 @@ import {
 
 export const ProductsCollection: CollectionOverride = ({ defaultCollection }) => ({
   ...defaultCollection,
+  dbName: 'products',
   admin: {
     ...defaultCollection?.admin,
     defaultColumns: ['title', 'generic_name', 'manufacturer', 'requires_prescription', '_status'],
@@ -51,13 +49,21 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
     variantOptions: true,
     variants: true,
     enableVariants: true,
-    gallery: true,
+
     priceInUSD: true,
     inventory: true,
     meta: true,
   },
   fields: [
     { name: 'title', type: 'text', required: true },
+    {
+      name: 'price',
+      type: 'number',
+      required: true,
+      admin: {
+        position: 'sidebar',
+      },
+    },
     {
       type: 'tabs',
       tabs: [
@@ -80,66 +86,8 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               label: false,
               required: false,
             },
-            {
-              name: 'gallery',
-              type: 'array',
-              minRows: 1,
-              fields: [
-                {
-                  name: 'image',
-                  type: 'upload',
-                  relationTo: 'media',
-                  required: true,
-                },
-                {
-                  name: 'variantOption',
-                  type: 'relationship',
-                  relationTo: 'variantOptions',
-                  admin: {
-                    condition: (data) => {
-                      return data?.enableVariants === true && data?.variantTypes?.length > 0
-                    },
-                  },
-                  filterOptions: ({ data }) => {
-                    if (data?.enableVariants && data?.variantTypes?.length) {
-                      const variantTypeIDs = data.variantTypes.map((item: any) => {
-                        if (typeof item === 'object' && item?.id) {
-                          return item.id
-                        }
-                        return item
-                      }) as DefaultDocumentIDType[]
 
-                      if (variantTypeIDs.length === 0)
-                        return {
-                          variantType: {
-                            in: [],
-                          },
-                        }
 
-                      const query: Where = {
-                        variantType: {
-                          in: variantTypeIDs,
-                        },
-                      }
-
-                      return query
-                    }
-
-                    return {
-                      variantType: {
-                        in: [],
-                      },
-                    }
-                  },
-                },
-              ],
-            },
-
-            {
-              name: 'layout',
-              type: 'blocks',
-              blocks: [CallToAction, Content, MediaBlock],
-            },
           ],
           label: 'Content',
         },
@@ -207,28 +155,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
                 position: 'sidebar',
               },
             },
-            {
-              name: 'relatedProducts',
-              type: 'relationship',
-              filterOptions: ({ id }) => {
-                if (id) {
-                  return {
-                    id: {
-                      not_in: [id],
-                    },
-                  }
-                }
 
-                // ID comes back as undefined during seeding so we need to handle that case
-                return {
-                  id: {
-                    exists: true,
-                  },
-                }
-              },
-              hasMany: true,
-              relationTo: 'products',
-            },
           ],
           label: 'Product Details',
         },
@@ -262,14 +189,15 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
       ],
     },
     {
-      name: 'categories',
+      name: 'category',
       type: 'relationship',
+      relationTo: 'categories',
+      hasMany: false,
+      required: true,
       admin: {
         position: 'sidebar',
-        sortOptions: 'title',
+        sortOptions: 'name', // Categories uses 'name' as title
       },
-      hasMany: true,
-      relationTo: 'categories',
     },
     slugField(),
   ],

@@ -12,12 +12,13 @@ import { adminOrPublishedStatus } from '@/access/adminOrPublishedStatus'
 import { customerOnlyFieldAccess } from '@/access/customerOnlyFieldAccess'
 import { isAdmin } from '@/access/isAdmin'
 import { isDocumentOwner } from '@/access/isDocumentOwner'
+import { Addresses } from '@/collections/Addresses'
 import { OrdersCollection } from '@/collections/Orders'
 import { ProductsCollection } from '@/collections/Products'
+import { TransactionsCollection } from '@/collections/Transactions'
 import { Page, Product } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
-import { enhanceAddressesPlugin } from './enhanceAddresses'
-import { enhanceCartPlugin } from './enhanceCart'
+
 
 const generateTitle: GenerateTitle<Product | Page> = ({ doc }) => {
   return doc?.title ? `${doc.title} | Payload Ecommerce Template` : 'Payload Ecommerce Template'
@@ -88,15 +89,19 @@ export const plugins: Plugin[] = [
         }),
       ],
     },
+    transactions: {
+      transactionsCollectionOverride: TransactionsCollection,
+    },
     products: {
       productsCollectionOverride: ProductsCollection,
     },
     orders: {
       ordersCollectionOverride: OrdersCollection,
     },
+    addresses: {
+      addressesCollectionOverride: () => Addresses,
+    },
   }),
-  // Apply address enhancements after e-commerce plugin
-  enhanceAddressesPlugin(),
-  // Apply cart enhancements after e-commerce plugin
-  enhanceCartPlugin(),
+
+
 ]

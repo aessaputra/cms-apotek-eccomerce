@@ -8,7 +8,7 @@ export const preventInactiveLogin: CollectionBeforeLoginHook = async ({
   user,
 }) => {
   // Check if user account is inactive
-  if (user && (user as any).is_active === false) {
+  if (user && 'is_active' in user && (user as { is_active: boolean }).is_active === false) {
     throw new Error('Account is inactive. Please contact support.')
   }
 

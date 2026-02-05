@@ -36,6 +36,7 @@ interface PerformanceMetrics {
     seqTupRead: number
     idxScans: number
     idxTupFetch: number
+    ratio: number
   }>
 }
 
@@ -52,7 +53,7 @@ export async function getSlowQueries(
     payload.logger.warn(`Slow query analysis temporarily disabled (limit: ${limit})`)
     return []
   } catch (error) {
-    payload.logger.error('Failed to get slow queries:', String(error))
+    payload.logger.error(`Failed to get slow queries: ${String(error)}`)
     return []
   }
 }
@@ -71,13 +72,13 @@ export async function getCacheHitRatio(payload: Payload): Promise<number> {
       FROM pg_statio_user_tables
       WHERE heap_blks_hit + heap_blks_read > 0
     `
-    
+
     const result = await payload.db.drizzle.execute(query)
     const ratio = result.rows?.[0]?.cache_hit_ratio
-    
+
     return ratio ? parseFloat(String(ratio)) : 0
   } catch (error) {
-    payload.logger.error('Failed to get cache hit ratio:', String(error))
+    payload.logger.error(`Failed to get cache hit ratio: ${String(error)}`)
     return 0
   }
 }
@@ -101,10 +102,10 @@ export async function getConnectionStats(payload: Payload): Promise<{
       FROM pg_stat_activity
       WHERE datname = current_database()
     `
-    
+
     const result = await payload.db.drizzle.execute(query)
     const stats = result.rows?.[0]
-    
+
     return {
       total: parseInt(String(stats?.total || '0')),
       active: parseInt(String(stats?.active || '0')),
@@ -112,7 +113,7 @@ export async function getConnectionStats(payload: Payload): Promise<{
       waiting: parseInt(String(stats?.waiting || '0')),
     }
   } catch (error) {
-    payload.logger.error('Failed to get connection stats:', String(error))
+    payload.logger.error(`Failed to get connection stats: ${String(error)}`)
     return { total: 0, active: 0, idle: 0, waiting: 0 }
   }
 }
@@ -145,10 +146,10 @@ export async function getTableAccessStats(payload: Payload): Promise<Array<{
       ORDER BY seq_tup_read DESC
       LIMIT 20
     `
-    
+
     const result = await payload.db.drizzle.execute(query)
-    
-    return (result.rows || []).map((row: any) => ({
+
+    return (result.rows || []).map((row: Record<string, unknown>) => ({
       table: String(row.table),
       seqScans: parseInt(String(row.seq_scans || '0')),
       seqTupRead: parseInt(String(row.seq_tup_read || '0')),
@@ -157,7 +158,7 @@ export async function getTableAccessStats(payload: Payload): Promise<Array<{
       ratio: parseFloat(String(row.ratio || '0')),
     }))
   } catch (error) {
-    payload.logger.error('Failed to get table access stats:', String(error))
+    payload.logger.error(`Failed to get table access stats: ${String(error)}`)
     return []
   }
 }
@@ -172,7 +173,7 @@ export async function getPerformanceMetrics(payload: Payload): Promise<Performan
     getConnectionStats(payload),
     getTableAccessStats(payload),
   ])
-  
+
   return {
     cacheHitRatio,
     connectionCount: connectionStats.total,
@@ -187,21 +188,21 @@ export async function getPerformanceMetrics(payload: Payload): Promise<Performan
  */
 export function generatePerformanceRecommendations(metrics: PerformanceMetrics): string[] {
   const recommendations: string[] = []
-  
+
   // Cache hit ratio recommendations
   if (metrics.cacheHitRatio < 95) {
     recommendations.push(
       `Cache hit ratio is ${metrics.cacheHitRatio}%. Consider increasing shared_buffers or work_mem.`
     )
   }
-  
+
   // Connection recommendations
   if (metrics.activeConnections > 50) {
     recommendations.push(
       `High number of active connections (${metrics.activeConnections}). Consider connection pooling.`
     )
   }
-  
+
   // Slow query recommendations
   if (metrics.slowQueries.length > 0) {
     const slowestQuery = metrics.slowQueries[0]
@@ -209,23 +210,23 @@ export function generatePerformanceRecommendations(metrics: PerformanceMetrics):
       `Slowest query averages ${slowestQuery.avgTime.toFixed(2)}ms. Consider adding indexes or optimizing the query.`
     )
   }
-  
+
   // Table scan recommendations
   const tablesWithHighSeqScans = metrics.tableStats.filter(
     table => table.seqScans > 1000 && table.ratio < 50
   )
-  
+
   if (tablesWithHighSeqScans.length > 0) {
     recommendations.push(
       `Tables with high sequential scans: ${tablesWithHighSeqScans.map(t => t.table).join(', ')}. Consider adding indexes.`
     )
   }
-  
+
   // General recommendations
   if (recommendations.length === 0) {
     recommendations.push('Database performance looks good! No immediate optimizations needed.')
   }
-  
+
   return recommendations
 }
 
@@ -236,35 +237,35 @@ export class QueryPerformanceMonitor {
   private startTime: number
   private operation: string
   private payload: Payload
-  
+
   constructor(payload: Payload, operation: string) {
     this.payload = payload
     this.operation = operation
     this.startTime = Date.now()
   }
-  
+
   /**
    * End monitoring and log performance metrics
    */
-  end(additionalInfo?: Record<string, any>): void {
+  end(additionalInfo?: Record<string, unknown>): void {
     const duration = Date.now() - this.startTime
-    
+
     if (duration > 1000) {
-      this.payload.logger.warn(`Slow operation detected: ${this.operation} took ${duration}ms`, additionalInfo || {})
+      this.payload.logger.warn(additionalInfo || {}, `Slow operation detected: ${this.operation} took ${duration}ms`)
     } else if (duration > 500) {
-      this.payload.logger.info(`Moderate operation duration: ${this.operation} took ${duration}ms`, additionalInfo || {})
+      this.payload.logger.info(additionalInfo || {}, `Moderate operation duration: ${this.operation} took ${duration}ms`)
     } else {
-      this.payload.logger.debug(`Operation completed: ${this.operation} took ${duration}ms`, additionalInfo || {})
+      this.payload.logger.debug(additionalInfo || {}, `Operation completed: ${this.operation} took ${duration}ms`)
     }
   }
-  
+
   /**
    * Add checkpoint with timing information
    */
-  checkpoint(name: string, additionalInfo?: Record<string, any>): void {
+  checkpoint(name: string, additionalInfo?: Record<string, unknown>): void {
     const duration = Date.now() - this.startTime
-    
-    this.payload.logger.debug(`${this.operation} - ${name}: ${duration}ms`, additionalInfo || {})
+
+    this.payload.logger.debug(additionalInfo || {}, `${this.operation} - ${name}: ${duration}ms`)
   }
 }
 
@@ -284,10 +285,10 @@ export async function generatePerformanceReport(payload: Payload): Promise<{
   summary: string
 }> {
   payload.logger.info('Generating performance report...')
-  
+
   const metrics = await getPerformanceMetrics(payload)
   const recommendations = generatePerformanceRecommendations(metrics)
-  
+
   const summary = `
 Performance Summary:
 - Cache Hit Ratio: ${metrics.cacheHitRatio}%
@@ -296,9 +297,9 @@ Performance Summary:
 - Tables Analyzed: ${metrics.tableStats.length}
 - Recommendations: ${recommendations.length}
   `.trim()
-  
+
   payload.logger.info('Performance report generated successfully')
-  
+
   return {
     metrics,
     recommendations,
@@ -317,22 +318,22 @@ export async function enableQueryStatistics(payload: Payload): Promise<{ success
         SELECT 1 FROM pg_extension WHERE extname = 'pg_stat_statements'
       ) as enabled
     `
-    
+
     const checkResult = await payload.db.drizzle.execute(checkQuery)
     const isEnabled = checkResult.rows?.[0]?.enabled
-    
+
     if (isEnabled) {
       return {
         success: true,
         message: 'pg_stat_statements extension is already enabled',
       }
     }
-    
+
     // Try to enable the extension
     await payload.db.drizzle.execute('CREATE EXTENSION IF NOT EXISTS pg_stat_statements')
-    
+
     payload.logger.info('pg_stat_statements extension enabled successfully')
-    
+
     return {
       success: true,
       message: 'pg_stat_statements extension enabled successfully. Restart required for full functionality.',
@@ -340,7 +341,7 @@ export async function enableQueryStatistics(payload: Payload): Promise<{ success
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     payload.logger.error(`Failed to enable pg_stat_statements: ${errorMessage}`)
-    
+
     return {
       success: false,
       message: `Failed to enable pg_stat_statements: ${errorMessage}`,

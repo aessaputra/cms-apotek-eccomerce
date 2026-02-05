@@ -22,7 +22,7 @@ import type { StockAvailabilityResult } from './stockAvailability'
 /**
  * Cache entry interface
  */
-interface CacheEntry<T = any> {
+interface CacheEntry<T = unknown> {
   data: T
   timestamp: number
   ttl: number
@@ -161,15 +161,15 @@ class MemoryCache {
       totalEntries: this.cache.size,
       totalHits: this.stats.hits,
       totalMisses: this.stats.misses,
-      hitRate: this.stats.hits + this.stats.misses > 0 
-        ? (this.stats.hits / (this.stats.hits + this.stats.misses)) * 100 
+      hitRate: this.stats.hits + this.stats.misses > 0
+        ? (this.stats.hits / (this.stats.hits + this.stats.misses)) * 100
         : 0,
       memoryUsage: this.getMemoryUsage(),
-      oldestEntry: entries.length > 0 
-        ? Math.min(...entries.map(e => now - e.timestamp)) 
+      oldestEntry: entries.length > 0
+        ? Math.min(...entries.map(e => now - e.timestamp))
         : 0,
-      newestEntry: entries.length > 0 
-        ? Math.max(...entries.map(e => now - e.timestamp)) 
+      newestEntry: entries.length > 0
+        ? Math.max(...entries.map(e => now - e.timestamp))
         : 0,
     }
   }
@@ -271,7 +271,7 @@ class MemoryCache {
    */
   private getMemoryUsage(): number {
     let size = 0
-    
+
     for (const [key, entry] of this.cache.entries()) {
       size += key.length * 2 // String characters are 2 bytes
       size += JSON.stringify(entry.data).length * 2
@@ -366,14 +366,14 @@ export const productCaching = {
   /**
    * Get cached product data
    */
-  getProduct: (productId: string): any | null => {
+  getProduct: (productId: string): unknown | null => {
     return productCache.get(`product:${productId}`)
   },
 
   /**
    * Cache product data
    */
-  setProduct: (productId: string, product: any, ttl?: number): void => {
+  setProduct: (productId: string, product: unknown, ttl?: number): void => {
     productCache.set(`product:${productId}`, product, ttl)
   },
 
@@ -382,22 +382,22 @@ export const productCaching = {
    */
   getOrFetchProduct: async (
     productId: string,
-    fetcher: () => Promise<any>
-  ): Promise<any> => {
+    fetcher: () => Promise<unknown>
+  ): Promise<unknown> => {
     return productCache.getOrSet(`product:${productId}`, fetcher)
   },
 
   /**
    * Cache product list
    */
-  setProductList: (key: string, products: any[], ttl?: number): void => {
+  setProductList: (key: string, products: unknown[], ttl?: number): void => {
     productCache.set(`products:${key}`, products, ttl)
   },
 
   /**
    * Get cached product list
    */
-  getProductList: (key: string): any[] | null => {
+  getProductList: (key: string): unknown[] | null => {
     return productCache.get(`products:${key}`)
   },
 
@@ -432,14 +432,14 @@ export const categoryCaching = {
   /**
    * Get cached categories
    */
-  getCategories: (): any[] | null => {
+  getCategories: (): unknown[] | null => {
     return categoryCache.get('categories:all')
   },
 
   /**
    * Cache categories
    */
-  setCategories: (categories: any[], ttl?: number): void => {
+  setCategories: (categories: unknown[], ttl?: number): void => {
     categoryCache.set('categories:all', categories, ttl)
   },
 
@@ -447,8 +447,8 @@ export const categoryCaching = {
    * Get or fetch categories with caching
    */
   getOrFetchCategories: async (
-    fetcher: () => Promise<any[]>
-  ): Promise<any[]> => {
+    fetcher: () => Promise<unknown[]>
+  ): Promise<unknown[]> => {
     return categoryCache.getOrSet('categories:all', fetcher)
   },
 
@@ -474,14 +474,14 @@ export const queryCaching = {
   /**
    * Get cached query result
    */
-  getQuery: (queryKey: string): any | null => {
+  getQuery: (queryKey: string): unknown | null => {
     return queryCache.get(queryKey)
   },
 
   /**
    * Cache query result
    */
-  setQuery: (queryKey: string, result: any, ttl?: number): void => {
+  setQuery: (queryKey: string, result: unknown, ttl?: number): void => {
     queryCache.set(queryKey, result, ttl)
   },
 
@@ -490,8 +490,8 @@ export const queryCaching = {
    */
   getOrExecuteQuery: async (
     queryKey: string,
-    executor: () => Promise<any>
-  ): Promise<any> => {
+    executor: () => Promise<unknown>
+  ): Promise<unknown> => {
     return queryCache.getOrSet(queryKey, executor)
   },
 
@@ -520,12 +520,12 @@ export const queryCaching = {
 /**
  * Generate cache key for complex queries
  */
-export function generateCacheKey(prefix: string, params: Record<string, any>): string {
+export const generateCacheKey = (prefix: string, params: Record<string, unknown>): string => {
   const sortedParams = Object.keys(params)
     .sort()
     .map(key => `${key}:${JSON.stringify(params[key])}`)
     .join('|')
-  
+
   return `${prefix}:${Buffer.from(sortedParams).toString('base64')}`
 }
 

@@ -8,6 +8,7 @@ import {
 
 export const Addresses: CollectionConfig = {
   slug: 'addresses',
+  dbName: 'addresses',
   admin: {
     useAsTitle: 'label',
     defaultColumns: ['label', 'customer', 'addressType', 'isDefaultShipping', 'isDefaultBilling'],
@@ -31,13 +32,13 @@ export const Addresses: CollectionConfig = {
       relationTo: 'users',
       required: true,
       admin: {
-        condition: ({ req }) => req.user?.roles?.includes('admin'),
+        condition: ({ req }) => req.user?.role === 'admin',
       },
       hooks: {
         beforeChange: [
           ({ req, value }) => {
             // Auto-assign current user if not admin
-            if (!req.user?.roles?.includes('admin')) {
+            if (req.user?.role !== 'admin') {
               return req.user?.id
             }
             return value

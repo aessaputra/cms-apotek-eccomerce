@@ -11,9 +11,9 @@ export const ensureFirstUserIsAdmin: FieldHook<User> = async ({ operation, req, 
   if (operation === 'create') {
     const users = await req.payload.find({ collection: 'users', depth: 0, limit: 0 })
     if (users.totalDocs === 0) {
-      // if `admin` not in array of values, add it
-      if (!(value || []).includes('admin')) {
-        return [...(value || []), 'admin']
+      // if `admin` not current value, set it
+      if (value !== 'admin') {
+        return 'admin'
       }
     }
   }

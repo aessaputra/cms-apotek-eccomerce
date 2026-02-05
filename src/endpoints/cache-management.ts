@@ -11,12 +11,12 @@
  */
 
 import {
-    categoryCaching,
-    clearAllCaches,
-    getAllCacheStats,
-    productCaching,
-    queryCaching,
-    stockCaching,
+  categoryCaching,
+  clearAllCaches,
+  getAllCacheStats,
+  productCaching,
+  queryCaching,
+  stockCaching,
 } from '@/utilities/caching'
 import { invalidateAllStockCaches, invalidateStockCache } from '@/utilities/stockAvailability'
 import type { Endpoint } from 'payload'
@@ -31,13 +31,13 @@ export const getCacheStats: Endpoint = {
   method: 'get',
   handler: async (req) => {
     // Check if user is admin
-    if (!req.user || !req.user.roles?.includes('admin')) {
+    if (!req.user || req.user.role !== 'admin') {
       throw new APIError('Unauthorized - Admin access required', 401)
     }
 
     try {
       const stats = getAllCacheStats()
-      
+
       return Response.json({
         success: true,
         stats,
@@ -46,7 +46,7 @@ export const getCacheStats: Endpoint = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       req.payload.logger.error(`Failed to get cache stats: ${errorMessage}`)
-      
+
       throw new APIError(`Failed to get cache stats: ${errorMessage}`, 500)
     }
   },
@@ -61,15 +61,15 @@ export const clearAllCache: Endpoint = {
   method: 'post',
   handler: async (req) => {
     // Check if user is admin
-    if (!req.user || !req.user.roles?.includes('admin')) {
+    if (!req.user || req.user.role !== 'admin') {
       throw new APIError('Unauthorized - Admin access required', 401)
     }
 
     try {
       clearAllCaches()
-      
+
       req.payload.logger.info('All caches cleared by admin user')
-      
+
       return Response.json({
         success: true,
         message: 'All caches cleared successfully',
@@ -78,7 +78,7 @@ export const clearAllCache: Endpoint = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       req.payload.logger.error(`Failed to clear all caches: ${errorMessage}`)
-      
+
       throw new APIError(`Failed to clear all caches: ${errorMessage}`, 500)
     }
   },
@@ -93,7 +93,7 @@ export const clearSpecificCache: Endpoint = {
   method: 'post',
   handler: async (req) => {
     // Check if user is admin
-    if (!req.user || !req.user.roles?.includes('admin')) {
+    if (!req.user || req.user.role !== 'admin') {
       throw new APIError('Unauthorized - Admin access required', 401)
     }
 
@@ -105,7 +105,7 @@ export const clearSpecificCache: Endpoint = {
 
     try {
       let message = ''
-      
+
       switch (type.toLowerCase()) {
         case 'stock':
           stockCaching.invalidateAll()
@@ -127,9 +127,9 @@ export const clearSpecificCache: Endpoint = {
         default:
           throw new APIError(`Invalid cache type: ${type}. Valid types: stock, product, category, query`, 400)
       }
-      
+
       req.payload.logger.info(`${message} by admin user`)
-      
+
       return Response.json({
         success: true,
         message,
@@ -139,7 +139,7 @@ export const clearSpecificCache: Endpoint = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       req.payload.logger.error(`Failed to clear ${type} cache: ${errorMessage}`)
-      
+
       throw new APIError(`Failed to clear ${type} cache: ${errorMessage}`, 500)
     }
   },
@@ -154,7 +154,7 @@ export const invalidateProductCache: Endpoint = {
   method: 'post',
   handler: async (req) => {
     // Check if user is admin
-    if (!req.user || !req.user.roles?.includes('admin')) {
+    if (!req.user || req.user.role !== 'admin') {
       throw new APIError('Unauthorized - Admin access required', 401)
     }
 
@@ -167,12 +167,12 @@ export const invalidateProductCache: Endpoint = {
     try {
       // Invalidate stock cache for the product
       invalidateStockCache(productId)
-      
+
       // Invalidate product cache
       productCaching.invalidateProduct(productId)
-      
+
       req.payload.logger.info(`Caches invalidated for product ${productId} by admin user`)
-      
+
       return Response.json({
         success: true,
         message: `Caches invalidated for product ${productId}`,
@@ -182,7 +182,7 @@ export const invalidateProductCache: Endpoint = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       req.payload.logger.error(`Failed to invalidate cache for product ${productId}: ${errorMessage}`)
-      
+
       throw new APIError(`Failed to invalidate cache for product ${productId}: ${errorMessage}`, 500)
     }
   },
@@ -197,38 +197,38 @@ export const warmupCaches: Endpoint = {
   method: 'post',
   handler: async (req) => {
     // Check if user is admin
-    if (!req.user || !req.user.roles?.includes('admin')) {
+    if (!req.user || req.user.role !== 'admin') {
       throw new APIError('Unauthorized - Admin access required', 401)
     }
 
     try {
       req.payload.logger.info('Starting cache warmup...')
-      
+
       let warmedItems = 0
-      
+
       // Warm up categories
       const categories = await req.payload.find({
         collection: 'categories',
         limit: 100,
       })
-      
+
       categoryCaching.setCategories(categories.docs, 30 * 60 * 1000) // 30 minutes
       warmedItems += categories.docs.length
-      
+
       // Warm up popular products (first 50)
       const products = await req.payload.find({
         collection: 'products',
         limit: 50,
         sort: '-createdAt',
       })
-      
+
       for (const product of products.docs) {
         productCaching.setProduct(`product:${product.id}`, product, 10 * 60 * 1000) // 10 minutes
         warmedItems++
       }
-      
+
       req.payload.logger.info(`Cache warmup completed: ${warmedItems} items cached`)
-      
+
       return Response.json({
         success: true,
         message: `Cache warmup completed: ${warmedItems} items cached`,
@@ -238,7 +238,7 @@ export const warmupCaches: Endpoint = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       req.payload.logger.error(`Cache warmup failed: ${errorMessage}`)
-      
+
       throw new APIError(`Cache warmup failed: ${errorMessage}`, 500)
     }
   },
@@ -253,35 +253,35 @@ export const getCacheHealth: Endpoint = {
   method: 'get',
   handler: async (req) => {
     // Check if user is admin
-    if (!req.user || !req.user.roles?.includes('admin')) {
+    if (!req.user || req.user.role !== 'admin') {
       throw new APIError('Unauthorized - Admin access required', 401)
     }
 
     try {
       const stats = getAllCacheStats()
       const recommendations: string[] = []
-      
+
       // Analyze cache performance and provide recommendations
       if (stats.total.hitRate < 50) {
         recommendations.push('Cache hit rate is low (<50%). Consider increasing cache TTL or warming up caches.')
       }
-      
+
       if (stats.total.memoryUsage > 50 * 1024 * 1024) { // 50MB
         recommendations.push('Cache memory usage is high (>50MB). Consider reducing cache size or TTL.')
       }
-      
+
       if (stats.stock.totalEntries === 0) {
         recommendations.push('Stock cache is empty. Consider warming up stock data for better performance.')
       }
-      
+
       if (stats.product.totalEntries === 0) {
         recommendations.push('Product cache is empty. Consider warming up product data for better performance.')
       }
-      
+
       if (recommendations.length === 0) {
         recommendations.push('Cache performance looks good! No immediate optimizations needed.')
       }
-      
+
       const health = {
         status: stats.total.hitRate > 70 ? 'healthy' : stats.total.hitRate > 50 ? 'warning' : 'critical',
         hitRate: stats.total.hitRate,
@@ -289,7 +289,7 @@ export const getCacheHealth: Endpoint = {
         totalEntries: stats.total.entries,
         recommendations,
       }
-      
+
       return Response.json({
         success: true,
         health,
@@ -299,7 +299,7 @@ export const getCacheHealth: Endpoint = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       req.payload.logger.error(`Failed to get cache health: ${errorMessage}`)
-      
+
       throw new APIError(`Failed to get cache health: ${errorMessage}`, 500)
     }
   },

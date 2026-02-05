@@ -6,6 +6,7 @@ import { publicAccess } from '@/access/publicAccess'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
+  dbName: 'categories',
   access: {
     create: adminOnly,
     delete: adminOnly,
@@ -30,11 +31,11 @@ export const Categories: CollectionConfig = {
       fieldToUse: 'name',
     }),
     {
-      name: 'logo',
-      type: 'upload',
-      relationTo: 'media',
+      name: 'logo_url',
+      type: 'text',
+      label: 'Logo URL',
       admin: {
-        description: 'Category logo/icon image',
+        description: 'URL of the category logo/icon image',
       },
     },
     {

@@ -23,7 +23,7 @@ export const lowStockReport: Endpoint = {
         throw new APIError('Authentication required', 401)
       }
 
-      if (!req.user.roles?.includes('admin')) {
+      if (req.user.role !== 'admin') {
         throw new APIError('Admin access required', 403)
       }
 
@@ -70,7 +70,7 @@ export const lowStockReport: Endpoint = {
 export const expiringProductsReport: Endpoint = {
   path: '/inventory/expiring',
   method: 'get',
-  handler: async (req) => {
+  handler: async () => {
     try {
       // Return empty result as expiry is disabled
       return Response.json({
@@ -82,7 +82,7 @@ export const expiringProductsReport: Endpoint = {
           message: "Expiry tracking disabled in simplified schema"
         },
       })
-    } catch (error) {
+    } catch (_error) {
       return Response.json(
         { success: false, error: 'Internal server error' },
         { status: 500 }
@@ -105,7 +105,7 @@ export const inventoryStatusReport: Endpoint = {
         throw new APIError('Authentication required', 401)
       }
 
-      if (!req.user.roles?.includes('admin')) {
+      if (req.user.role !== 'admin') {
         throw new APIError('Admin access required', 403)
       }
 
@@ -171,7 +171,7 @@ export const inventoryStatusReport: Endpoint = {
 export const inventoryMovementsReport: Endpoint = {
   path: '/inventory/movements',
   method: 'get',
-  handler: async (req) => {
+  handler: async () => {
     // Return empty result as movements are disabled
     return Response.json({
       success: true,
@@ -205,7 +205,7 @@ export const salesReport: Endpoint = {
         throw new APIError('Authentication required', 401)
       }
 
-      if (!req.user.roles?.includes('admin')) {
+      if (req.user.role !== 'admin') {
         throw new APIError('Admin access required', 403)
       }
 
@@ -266,7 +266,7 @@ export const inventoryStatusReportEndpoint: Endpoint = {
         throw new APIError('Authentication required', 401)
       }
 
-      if (!req.user.roles?.includes('admin')) {
+      if (req.user.role !== 'admin') {
         throw new APIError('Admin access required', 403)
       }
 
@@ -317,7 +317,7 @@ export const prescriptionTrackingReportEndpoint: Endpoint = {
         throw new APIError('Authentication required', 401)
       }
 
-      if (!req.user.roles?.includes('admin')) {
+      if (req.user.role !== 'admin') {
         throw new APIError('Admin access required', 403)
       }
 
@@ -374,15 +374,14 @@ export const financialReport: Endpoint = {
         throw new APIError('Authentication required', 401)
       }
 
-      if (!req.user.roles?.includes('admin')) {
+      if (req.user.role !== 'admin') {
         throw new APIError('Admin access required', 403)
       }
 
       // Parse query parameters
       const startDate = req.query.startDate as string
       const endDate = req.query.endDate as string
-      const previousPeriodStartDate = req.query.previousPeriodStartDate as string
-      const previousPeriodEndDate = req.query.previousPeriodEndDate as string
+
 
       if (!startDate || !endDate) {
         throw new APIError('Start date and end date are required', 400)
@@ -392,8 +391,6 @@ export const financialReport: Endpoint = {
       const report = await generateFinancialReport(req.payload, {
         startDate,
         endDate,
-        previousPeriodStartDate,
-        previousPeriodEndDate,
       })
 
       return Response.json({

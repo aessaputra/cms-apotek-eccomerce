@@ -19,15 +19,17 @@ export const adminOnlyWithRoleValidation: Access = ({ req }) => {
     return false
   }
 
-  // Validate that user has roles array
-  if (!user.roles || !Array.isArray(user.roles)) {
-    req.payload.logger.warn(`User ${user.id} has invalid roles structure: ${JSON.stringify(user.roles)}`)
+  // Validate that user has role string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!(user as any).role || typeof (user as any).role !== 'string') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    req.payload.logger.warn(`User ${user.id} has invalid role structure: ${JSON.stringify((user as any).role)}`)
     return false
   }
 
   // Check for admin role using the utility function
   const hasAdminRole = checkRole(['admin'], user)
-  
+
   if (!hasAdminRole) {
     req.payload.logger.info(`Access denied for user ${user.id} - admin role required`)
   }

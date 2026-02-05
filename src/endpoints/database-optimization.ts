@@ -11,14 +11,14 @@
  */
 
 import {
-    analyzePerformance,
-    optimizeDatabase as optimizeDatabaseIndexes,
-    vacuumAnalyze as vacuumAndAnalyze,
+  analyzePerformance,
+  optimizeDatabase as optimizeDatabaseIndexes,
+  vacuumAnalyze as vacuumAndAnalyze,
 } from '@/utilities/databaseOptimization'
 import {
-    enableQueryStatistics,
-    generatePerformanceReport,
-    getPerformanceMetrics,
+  enableQueryStatistics,
+  generatePerformanceReport,
+  getPerformanceMetrics,
 } from '@/utilities/performanceMonitoring'
 import type { Endpoint } from 'payload'
 import { APIError } from 'payload'
@@ -32,18 +32,18 @@ export const optimizeDatabase: Endpoint = {
   method: 'post',
   handler: async (req) => {
     // Check if user is admin
-    if (!req.user || !req.user.roles?.includes('admin')) {
+    if (!req.user || req.user.role !== 'admin') {
       throw new APIError('Unauthorized - Admin access required', 401)
     }
 
     try {
       req.payload.logger.info('Starting database optimization...')
-      
+
       const result = await optimizeDatabaseIndexes(req.payload)
-      
+
       return Response.json({
         success: result.success,
-        message: result.success 
+        message: result.success
           ? 'Database optimization completed successfully'
           : 'Database optimization completed with some errors',
         results: result.results,
@@ -51,7 +51,7 @@ export const optimizeDatabase: Endpoint = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       req.payload.logger.error(`Database optimization failed: ${errorMessage}`)
-      
+
       throw new APIError(`Database optimization failed: ${errorMessage}`, 500)
     }
   },
@@ -66,13 +66,13 @@ export const getPerformanceReport: Endpoint = {
   method: 'get',
   handler: async (req) => {
     // Check if user is admin
-    if (!req.user || !req.user.roles?.includes('admin')) {
+    if (!req.user || req.user.role !== 'admin') {
       throw new APIError('Unauthorized - Admin access required', 401)
     }
 
     try {
       const report = await generatePerformanceReport(req.payload)
-      
+
       return Response.json({
         success: true,
         ...report,
@@ -80,7 +80,7 @@ export const getPerformanceReport: Endpoint = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       req.payload.logger.error(`Failed to generate performance report: ${errorMessage}`)
-      
+
       throw new APIError(`Failed to generate performance report: ${errorMessage}`, 500)
     }
   },
@@ -95,13 +95,13 @@ export const vacuumDatabase: Endpoint = {
   method: 'post',
   handler: async (req) => {
     // Check if user is admin
-    if (!req.user || !req.user.roles?.includes('admin')) {
+    if (!req.user || req.user.role !== 'admin') {
       throw new APIError('Unauthorized - Admin access required', 401)
     }
 
     try {
       const result = await vacuumAndAnalyze(req.payload)
-      
+
       return Response.json({
         success: result.success,
         message: result.message,
@@ -109,7 +109,7 @@ export const vacuumDatabase: Endpoint = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       req.payload.logger.error(`Database vacuum failed: ${errorMessage}`)
-      
+
       throw new APIError(`Database vacuum failed: ${errorMessage}`, 500)
     }
   },
@@ -124,7 +124,7 @@ export const analyzeIndexes: Endpoint = {
   method: 'get',
   handler: async (req) => {
     // Check if user is admin
-    if (!req.user || !req.user.roles?.includes('admin')) {
+    if (!req.user || req.user.role !== 'admin') {
       throw new APIError('Unauthorized - Admin access required', 401)
     }
 
@@ -132,7 +132,7 @@ export const analyzeIndexes: Endpoint = {
       const [indexAnalysis] = await Promise.all([
         analyzePerformance(req.payload),
       ])
-      
+
       return Response.json({
         success: true,
         analysis: indexAnalysis,
@@ -140,7 +140,7 @@ export const analyzeIndexes: Endpoint = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       req.payload.logger.error(`Index analysis failed: ${errorMessage}`)
-      
+
       throw new APIError(`Index analysis failed: ${errorMessage}`, 500)
     }
   },
@@ -155,13 +155,13 @@ export const enableStats: Endpoint = {
   method: 'post',
   handler: async (req) => {
     // Check if user is admin
-    if (!req.user || !req.user.roles?.includes('admin')) {
+    if (!req.user || req.user.role !== 'admin') {
       throw new APIError('Unauthorized - Admin access required', 401)
     }
 
     try {
       const result = await enableQueryStatistics(req.payload)
-      
+
       return Response.json({
         success: result.success,
         message: result.message,
@@ -169,7 +169,7 @@ export const enableStats: Endpoint = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       req.payload.logger.error(`Failed to enable query statistics: ${errorMessage}`)
-      
+
       throw new APIError(`Failed to enable query statistics: ${errorMessage}`, 500)
     }
   },
@@ -184,13 +184,13 @@ export const getMetrics: Endpoint = {
   method: 'get',
   handler: async (req) => {
     // Check if user is admin
-    if (!req.user || !req.user.roles?.includes('admin')) {
+    if (!req.user || req.user.role !== 'admin') {
       throw new APIError('Unauthorized - Admin access required', 401)
     }
 
     try {
       const metrics = await getPerformanceMetrics(req.payload)
-      
+
       return Response.json({
         success: true,
         metrics,
@@ -198,7 +198,7 @@ export const getMetrics: Endpoint = {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       req.payload.logger.error(`Failed to get performance metrics: ${errorMessage}`)
-      
+
       throw new APIError(`Failed to get performance metrics: ${errorMessage}`, 500)
     }
   },

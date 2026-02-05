@@ -59,7 +59,8 @@ export const calculateProductAvailability: CollectionAfterReadHook = async ({
     let lowStockThreshold = 10
 
     if (inventoryResult.docs.length > 0) {
-      const inventory = inventoryResult.docs[0] as any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const inventory: any = inventoryResult.docs[0]
       totalQuantity = inventory.quantity || 0
       lowStockThreshold = inventory.low_stock_threshold || 10
     }

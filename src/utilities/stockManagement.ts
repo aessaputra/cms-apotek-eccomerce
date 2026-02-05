@@ -47,8 +47,8 @@ export interface InventoryValuation {
   reservedValue: number
   expiredValue: number
   expiringValue: number
-  categoryBreakdown: any[]
-  supplierBreakdown: any[]
+  categoryBreakdown: Record<string, unknown>[]
+  supplierBreakdown: Record<string, unknown>[]
   lastCalculated: string
 }
 
@@ -236,12 +236,12 @@ export async function generateStockOptimizationRecommendations(
 }
 
 // Stub for retired function to prevent import errors in short term
-export async function getExpiringProducts(payload: Payload, options: any = {}): Promise<ExpiringProduct[]> {
+export async function getExpiringProducts(payload: Payload, _options: Record<string, unknown> = {}): Promise<ExpiringProduct[]> {
   return []
 }
 
 // Stub for inventory valuation
-export async function calculateInventoryValuation(payload: Payload, options: any = {}): Promise<InventoryValuation> {
+export async function calculateInventoryValuation(payload: Payload, _options: Record<string, unknown> = {}): Promise<InventoryValuation> {
   return {
     totalValue: 0,
     availableValue: 0,
