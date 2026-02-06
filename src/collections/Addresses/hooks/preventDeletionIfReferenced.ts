@@ -12,11 +12,11 @@ export const preventDeletionIfReferenced: CollectionBeforeDeleteHook = async ({
   const { payload } = req
 
   try {
-    // Check if this address is referenced by any orders as billing address
-    const ordersWithBillingAddress = await payload.find({
+    // Check if this address is referenced by any orders (Orders collection uses 'address' field, dbName: address_id)
+    const ordersWithAddress = await payload.find({
       collection: 'orders',
       where: {
-        billingAddress: {
+        address: {
           equals: id,
         },
       },
@@ -25,80 +25,14 @@ export const preventDeletionIfReferenced: CollectionBeforeDeleteHook = async ({
       overrideAccess: false,
     })
 
-    if (ordersWithBillingAddress.totalDocs > 0) {
+    if (ordersWithAddress.totalDocs > 0) {
       throw new APIError(
-        'Cannot delete address: it is referenced by existing orders as a billing address. You can deactivate it instead.',
+        'Cannot delete address: it is referenced by existing orders. You can deactivate it instead.',
         400,
         null,
         true
       )
     }
-
-    // Check if this address is referenced by any orders as shipping address
-    const ordersWithShippingAddress = await payload.find({
-      collection: 'orders',
-      where: {
-        shippingAddress: {
-          equals: id,
-        },
-      },
-      limit: 1,
-      req,
-      overrideAccess: false,
-    })
-
-    if (ordersWithShippingAddress.totalDocs > 0) {
-      throw new APIError(
-        'Cannot delete address: it is referenced by existing orders as a shipping address. You can deactivate it instead.',
-        400,
-        null,
-        true
-      )
-    }
-
-    // Check if this address is referenced by any transactions
-    const transactionsWithBillingAddress = await payload.find({
-      collection: 'transactions',
-      where: {
-        'billingAddress.id': {
-          equals: id,
-        },
-      },
-      limit: 1,
-      req,
-      overrideAccess: false,
-    })
-
-    if (transactionsWithBillingAddress.totalDocs > 0) {
-      throw new APIError(
-        'Cannot delete address: it is referenced by existing transactions. You can deactivate it instead.',
-        400,
-        null,
-        true
-      )
-    }
-
-    const transactionsWithShippingAddress = await payload.find({
-      collection: 'transactions',
-      where: {
-        'shippingAddress.id': {
-          equals: id,
-        },
-      },
-      limit: 1,
-      req,
-      overrideAccess: false,
-    })
-
-    if (transactionsWithShippingAddress.totalDocs > 0) {
-      throw new APIError(
-        'Cannot delete address: it is referenced by existing transactions. You can deactivate it instead.',
-        400,
-        null,
-        true
-      )
-    }
-
   } catch (error) {
     if (error instanceof APIError) {
       throw error

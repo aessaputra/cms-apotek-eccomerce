@@ -11,6 +11,7 @@ import { ensureFirstUserIsAdmin } from './hooks/ensureFirstUserIsAdmin'
 export const Users: CollectionConfig = {
   slug: 'users',
   dbName: 'profiles', // Strict mapping to Supabase 'profiles' table
+  lockDocuments: false,
   access: {
     admin: ({ req: { user } }) => checkRole(['admin'], user),
     create: publicAccess,

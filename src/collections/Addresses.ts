@@ -1,4 +1,4 @@
-import { adminOrCustomerOwner } from '@/access/adminOrCustomerOwner'
+import { adminOrAddressOwner } from '@/access/adminOrAddressOwner'
 import type { CollectionConfig } from 'payload'
 import {
   ensureUniqueDefaultAddress,
@@ -13,16 +13,17 @@ import {
 export const Addresses: CollectionConfig = {
   slug: 'addresses',
   dbName: 'addresses',
+  lockDocuments: false,
   admin: {
     useAsTitle: 'label',
     defaultColumns: ['label', 'recipient_name', 'city', 'is_default'],
     group: 'E-commerce',
   },
   access: {
-    create: ({ req }) => Boolean(req.user),
-    read: adminOrCustomerOwner,
-    update: adminOrCustomerOwner,
-    delete: adminOrCustomerOwner,
+    create: ({ req }) => Boolean(req?.user),
+    read: adminOrAddressOwner,
+    update: adminOrAddressOwner,
+    delete: adminOrAddressOwner,
   },
   hooks: {
     beforeValidate: [validateAddressData],
@@ -37,14 +38,14 @@ export const Addresses: CollectionConfig = {
       required: true,
       // Maps to user_id in Supabase
       admin: {
-        condition: ({ req }) => req.user?.role === 'admin',
+        condition: ({ req }) => req?.user?.role === 'admin',
       },
       hooks: {
         beforeChange: [
           ({ req, value }) => {
-            // Auto-assign current user if not admin
-            if (req.user?.role !== 'admin') {
-              return req.user?.id
+            // Auto-assign current user if not admin (when req context exists)
+            if (req?.user && req.user.role !== 'admin') {
+              return req.user.id
             }
             return value
           },

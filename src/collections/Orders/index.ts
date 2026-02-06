@@ -1,18 +1,22 @@
-import { adminOrCustomerOwner } from '@/access/adminOrCustomerOwner'
+import { adminOrOrderOwner } from '@/access/adminOrOrderOwner'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
 
 export const OrdersCollection: CollectionOverride = ({ defaultCollection }) => ({
   ...defaultCollection,
   dbName: 'orders',
+  lockDocuments: false,
+  hooks: {
+    ...defaultCollection?.hooks,
+  },
   admin: {
     ...defaultCollection?.admin,
-    defaultColumns: ['id', 'status', 'total', 'createdAt'],
+    defaultColumns: ['id', 'status', 'totalAmount', 'createdAt'],
     useAsTitle: 'id',
   },
   access: {
-    read: adminOrCustomerOwner,
-    update: adminOrCustomerOwner,
-    delete: adminOrCustomerOwner,
+    read: adminOrOrderOwner,
+    update: adminOrOrderOwner,
+    delete: adminOrOrderOwner,
     create: ({ req }) => Boolean(req.user),
   },
   fields: [
@@ -27,7 +31,7 @@ export const OrdersCollection: CollectionOverride = ({ defaultCollection }) => (
       },
     },
     {
-      name: 'total',
+      name: 'totalAmount',
       type: 'number',
       required: true,
       dbName: 'total_amount',

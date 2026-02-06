@@ -9,6 +9,8 @@ import {
 export const ProductsCollection: CollectionOverride = ({ defaultCollection }) => ({
   ...defaultCollection,
   dbName: 'products',
+  versions: false,
+  lockDocuments: false,
   admin: {
     ...defaultCollection?.admin,
     defaultColumns: ['title', '_status'],
@@ -34,7 +36,19 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
 
   },
   fields: [
-    { name: 'title', type: 'text', required: true, dbName: 'name' },
+    {
+      name: 'title',
+      type: 'text',
+      required: true,
+      dbName: 'title',
+    },
+    {
+      name: 'name',
+      type: 'text',
+      required: false,
+      dbName: 'name',
+      admin: { hidden: true, readOnly: true, description: 'Synced from title for React Native' },
+    },
     {
       name: 'price',
       type: 'number',
@@ -103,7 +117,14 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
         return data
       },
     ],
-    // beforeChange: [validatePharmacyFields],
+    beforeChange: [
+      async ({ data }) => {
+        if (data?.title != null) {
+          data.name = data.title as string
+        }
+        return data
+      },
+    ],
     afterRead: [calculateProductAvailability],
   },
 })

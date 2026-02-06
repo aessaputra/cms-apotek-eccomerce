@@ -12,6 +12,7 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export const Media: CollectionConfig = {
+  lockDocuments: false,
   admin: {
     group: 'Content',
   },

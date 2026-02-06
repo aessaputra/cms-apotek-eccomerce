@@ -5,6 +5,7 @@ import type { CollectionConfig } from 'payload'
 export const ProductImages: CollectionConfig = {
     slug: 'product-images',
     dbName: 'product_images',
+    lockDocuments: false,
     admin: {
         useAsTitle: 'image_url',
         group: 'Content',

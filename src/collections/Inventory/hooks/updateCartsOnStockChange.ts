@@ -54,14 +54,23 @@ export const updateCartsOnStockChange: CollectionAfterChangeHook = async ({
       )
 
       // Get all carts that contain this product
-      const cartsWithProduct = await req.payload.find({
-        collection: 'carts',
-        where: {
-          'items.product': { equals: productId },
-        },
-        limit: 1000,
-        req,
-      })
+      // Note: Carts collection structure depends on ecommerce plugin; skip if not available
+      let cartsWithProduct: { docs: Cart[] } = { docs: [] }
+      try {
+        cartsWithProduct = await req.payload.find({
+          collection: 'carts',
+          where: {
+            'items.product': { equals: productId },
+          },
+          limit: 1000,
+          req,
+        })
+      } catch (err) {
+        req.payload.logger.warn(
+          `Could not query carts for product ${productId} (carts schema may differ): ${err instanceof Error ? err.message : String(err)}`
+        )
+        return doc
+      }
 
       req.payload.logger.info(`Found ${cartsWithProduct.docs.length} carts containing product ${productId}`)
 

@@ -226,7 +226,7 @@ export interface Order {
   /**
    * Total order amount
    */
-  total: number;
+  totalAmount: number;
   status?: ('pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled') | null;
   items: {
     product: string | Product;
@@ -254,6 +254,10 @@ export interface Order {
 export interface Product {
   id: string;
   title: string;
+  /**
+   * Synced from title for React Native
+   */
+  name?: string | null;
   price: number;
   description?: string | null;
   inventory?: number | null;
@@ -271,7 +275,6 @@ export interface Product {
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -582,34 +585,6 @@ export interface PayloadLockedDocument {
   id: string;
   document?:
     | ({
-        relationTo: 'users';
-        value: string | User;
-      } | null)
-    | ({
-        relationTo: 'cart-items';
-        value: string | CartItem;
-      } | null)
-    | ({
-        relationTo: 'categories';
-        value: string | Category;
-      } | null)
-    | ({
-        relationTo: 'media';
-        value: string | Media;
-      } | null)
-    | ({
-        relationTo: 'inventory';
-        value: string | Inventory;
-      } | null)
-    | ({
-        relationTo: 'product-images';
-        value: string | ProductImage;
-      } | null)
-    | ({
-        relationTo: 'addresses';
-        value: string | Address;
-      } | null)
-    | ({
         relationTo: 'variants';
         value: string | Variant;
       } | null)
@@ -622,16 +597,8 @@ export interface PayloadLockedDocument {
         value: string | VariantOption;
       } | null)
     | ({
-        relationTo: 'products';
-        value: string | Product;
-      } | null)
-    | ({
         relationTo: 'carts';
         value: string | Cart;
-      } | null)
-    | ({
-        relationTo: 'orders';
-        value: string | Order;
       } | null)
     | ({
         relationTo: 'transactions';
@@ -832,6 +799,7 @@ export interface VariantOptionsSelect<T extends boolean = true> {
  */
 export interface ProductsSelect<T extends boolean = true> {
   title?: T;
+  name?: T;
   price?: T;
   description?: T;
   inventory?: T;
@@ -845,7 +813,6 @@ export interface ProductsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   deletedAt?: T;
-  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -875,7 +842,7 @@ export interface CartsSelect<T extends boolean = true> {
  */
 export interface OrdersSelect<T extends boolean = true> {
   orderedBy?: T;
-  total?: T;
+  totalAmount?: T;
   status?: T;
   items?:
     | T

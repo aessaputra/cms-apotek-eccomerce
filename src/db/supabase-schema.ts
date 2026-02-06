@@ -49,7 +49,7 @@ export const profiles = pgTable('profiles', {
  */
 export const addresses = pgTable('addresses', {
     id: uuid('id').primaryKey(),
-    userId: uuid('user_id').notNull(),
+    user_id: uuid('user_id').notNull(), // Match Payload Where path
     label: varchar('label', { length: 50 }),
     recipientName: text('recipient_name').notNull(),
     phone: varchar('phone', { length: 20 }),
@@ -134,7 +134,7 @@ export const inventory = pgTable('inventory', {
  */
 export const orders = pgTable('orders', {
     id: uuid('id').primaryKey(),
-    userId: uuid('user_id'),
+    user_id: uuid('user_id'), // orderedBy dbName - match Payload Where path
     customerId: uuid('customer_id'), // Payload ecommerce plugin compatibility
     addressId: uuid('address_id'),
     totalAmount: numeric('total_amount', { precision: 12, scale: 2 }),
@@ -147,17 +147,15 @@ export const orders = pgTable('orders', {
 })
 
 /**
- * Order line items
+ * Order line items - Payload array structure (_parent_id, _order, id as text)
  */
 export const orderItems = pgTable('order_items', {
-    id: uuid('id').primaryKey(),
-    orderId: uuid('order_id').notNull(),
+    id: text('id').primaryKey(),
+    parentId: uuid('_parent_id').references(() => orders.id, { onDelete: 'cascade' }),
+    order: integer('_order').notNull().default(0),
     productId: uuid('product_id'),
-    productName: text('product_name'),
-    unitPrice: numeric('unit_price', { precision: 12, scale: 2 }),
+    price: numeric('price', { precision: 12, scale: 2 }),
     quantity: integer('quantity').default(1),
-    totalPrice: numeric('total_price', { precision: 12, scale: 2 }),
-    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
 })
 
 /**

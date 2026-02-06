@@ -30,9 +30,9 @@ const dirname = path.dirname(filename)
 
 export default buildConfig({
   admin: {
-
     user: Users.slug,
   },
+  lockDocuments: false,
   collections: [Users, CartItems, Categories, Media, Inventory, ProductImages],
   db: postgresAdapter({
     pool: {

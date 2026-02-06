@@ -10,6 +10,7 @@ import { publicAccess } from '@/access/publicAccess'
 export const Categories: CollectionConfig = {
   slug: 'categories',
   dbName: 'categories',
+  lockDocuments: false,
   access: {
     create: adminOnly,
     delete: adminOnly,

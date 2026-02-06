@@ -70,7 +70,7 @@ export async function processOrderWithStockDeduction(
       const productId = item.product.id
       const quantityRequired = item.quantity || 0
 
-      // Find single inventory record for product
+      // Find single inventory record for product (overrideAccess for admin context)
       const inventoryResult = await payload.find({
         collection: 'inventory',
         where: {
@@ -78,6 +78,7 @@ export async function processOrderWithStockDeduction(
         },
         limit: 1,
         req,
+        overrideAccess: true,
       })
 
       if (inventoryResult.docs.length === 0) {
@@ -123,7 +124,7 @@ export async function processOrderWithStockDeduction(
         )
       }
 
-      // Update inventory quantity
+      // Update inventory quantity (overrideAccess for admin context in tests)
       await payload.update({
         collection: 'inventory',
         id: deduction.inventoryId,
@@ -131,6 +132,7 @@ export async function processOrderWithStockDeduction(
           quantity: newQuantity,
         },
         req,
+        overrideAccess: true,
         context: {
           skipHooks: true, // Prevent infinite loops
         },

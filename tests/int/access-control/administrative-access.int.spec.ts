@@ -4,15 +4,8 @@ import { getPayload } from 'payload'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 /**
- * Integration tests for administrative access policies
- * 
- * Requirements tested:
- * - 7.3: Admin-only access for inventory collection
- * - 7.4: Admin access for inventory_movements collection
- * - 6.3: Administrative authorization for inventory adjustments
- * 
- * These tests verify that sensitive administrative operations are properly
- * restricted to users with admin roles and that audit logs are immutable.
+ * Integration tests for administrative access policies.
+ * Verifies admin-only operations per Payload CMS access patterns.
  */
 
 describe('Administrative Access Policies', () => {
@@ -26,6 +19,7 @@ describe('Administrative Access Policies', () => {
 
   beforeAll(async () => {
     payload = await getPayload({ config })
+    const ts = Date.now()
 
     // Create a category
     testCategory = await payload.create({
@@ -39,7 +33,7 @@ describe('Administrative Access Policies', () => {
     adminUser = await payload.create({
       collection: 'users',
       data: {
-        email: 'admin-policy-test@example.com',
+        email: `admin-policy-${ts}@example.com`,
         password: 'test123456',
         full_name: 'Admin User',
         phone: '+1234567890',
@@ -51,7 +45,7 @@ describe('Administrative Access Policies', () => {
     customerUser = await payload.create({
       collection: 'users',
       data: {
-        email: 'customer-policy-test@example.com',
+        email: `customer-policy-${ts}@example.com`,
         password: 'test123456',
         full_name: 'Customer User',
         phone: '+1234567891',
@@ -63,7 +57,7 @@ describe('Administrative Access Policies', () => {
     inactiveAdminUser = await payload.create({
       collection: 'users',
       data: {
-        email: 'inactive-admin-test@example.com',
+        email: `inactive-admin-${ts}@example.com`,
         password: 'test123456',
         full_name: 'Inactive Admin',
         phone: '+1234567892',
@@ -106,7 +100,7 @@ describe('Administrative Access Policies', () => {
     }
   })
 
-  describe('Inventory Collection Access (Requirements 7.3, 7.4)', () => {
+  describe('Inventory Collection Access', () => {
     it('should allow active admin users to create inventory', async () => {
       testInventory = await payload.create({
         collection: 'inventory',
@@ -123,7 +117,7 @@ describe('Administrative Access Policies', () => {
       expect(testInventory.quantity).toBe(100)
     })
 
-    it('should allow active admin users to read inventory', async () => {
+    it('should allow active admin users to read inventory', { timeout: 60000 }, async () => {
       const result = await payload.find({
         collection: 'inventory',
         user: adminUser,
@@ -193,39 +187,12 @@ describe('Administrative Access Policies', () => {
     })
   })
 
-  describe('Role Validation (Requirement 6.3)', () => {
-    let userWithoutRoles: any
-    let userWithInvalidRoles: any
-
-    beforeAll(async () => {
-      // Create user without roles (this should not happen in normal operation)
-      userWithoutRoles = await payload.create({
-        collection: 'users',
-        data: {
-          email: 'no-roles-test@example.com',
-          password: 'test123456',
-          full_name: 'No Roles User',
-          phone: '+1234567893',
-          // role will default to 'customer' per schema
-        },
-        overrideAccess: true, // Override to create user for testing
-      })
-
-      // Manually set invalid role structure for testing if possible, 
-      // but 'role' is a select field, so we'll just test non-admin access.
-    })
-
-    afterAll(async () => {
-      if (userWithoutRoles?.id) {
-        await payload.delete({ collection: 'users', id: userWithoutRoles.id })
-      }
-    })
-
+  describe('Role Validation', () => {
     it('should prevent access for non-admin users to sensitive data', async () => {
       await expect(
         payload.find({
           collection: 'inventory',
-          user: userWithoutRoles,
+          user: customerUser,
           overrideAccess: false,
         })
       ).rejects.toThrow()

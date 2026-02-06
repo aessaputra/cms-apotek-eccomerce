@@ -5,6 +5,7 @@ import type { CollectionConfig } from 'payload'
 export const CartItems: CollectionConfig = {
     slug: 'cart-items',
     dbName: 'cart_items', // Strict mapping to Supabase 'cart_items' table
+    lockDocuments: false,
     admin: {
         useAsTitle: 'product',
         defaultColumns: ['product', 'quantity', 'user'],
