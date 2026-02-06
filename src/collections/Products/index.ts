@@ -2,13 +2,7 @@ import { adminOnly } from '@/access/adminOnly'
 import { publicAccess } from '@/access/publicAccess'
 import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
-import {
-  MetaDescriptionField,
-  MetaImageField,
-  MetaTitleField,
-  OverviewField,
-  PreviewField,
-} from '@payloadcms/plugin-seo/fields'
+
 import {
   FixedToolbarFeature,
   HeadingFeature,
@@ -59,7 +53,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
 
     priceInUSD: true,
     inventory: true,
-    meta: true,
+
   },
   fields: [
     { name: 'title', type: 'text', required: true },
@@ -167,33 +161,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
           ],
           label: 'Product Details',
         },
-        {
-          name: 'meta',
-          label: 'SEO',
-          fields: [
-            OverviewField({
-              titlePath: 'meta.title',
-              descriptionPath: 'meta.description',
-              imagePath: 'meta.image',
-            }),
-            MetaTitleField({
-              hasGenerateFn: true,
-            }),
-            MetaImageField({
-              relationTo: 'media',
-            }),
 
-            MetaDescriptionField({}),
-            PreviewField({
-              // if the `generateUrl` function is configured
-              hasGenerateFn: true,
-
-              // field paths to match the target field for data
-              titlePath: 'meta.title',
-              descriptionPath: 'meta.description',
-            }),
-          ],
-        },
       ],
     },
     {
