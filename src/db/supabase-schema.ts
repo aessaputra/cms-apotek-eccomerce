@@ -33,6 +33,13 @@ export const profiles = pgTable('profiles', {
     fullName: text('full_name'),
     phone: varchar('phone', { length: 20 }),
     role: varchar('role', { length: 20 }).default('customer'),
+    // Payload CMS auth columns
+    resetPasswordToken: varchar('reset_password_token', { length: 255 }),
+    resetPasswordExpiration: timestamp('reset_password_expiration', { withTimezone: true }),
+    salt: varchar('salt', { length: 255 }),
+    hash: varchar('hash', { length: 255 }),
+    loginAttempts: integer('login_attempts').default(0),
+    lockUntil: timestamp('lock_until', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 })
@@ -52,6 +59,17 @@ export const addresses = pgTable('addresses', {
     isDefault: boolean('is_default').default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+})
+
+/**
+ * Payload CMS Sessions
+ */
+export const profilesSessions = pgTable('profiles_sessions', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    parentId: uuid('_parent_id').references(() => profiles.id, { onDelete: 'cascade' }),
+    order: integer('_order').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
 })
 
 // ============================================================================
@@ -117,6 +135,7 @@ export const inventory = pgTable('inventory', {
 export const orders = pgTable('orders', {
     id: uuid('id').primaryKey(),
     userId: uuid('user_id'),
+    customerId: uuid('customer_id'), // Payload ecommerce plugin compatibility
     addressId: uuid('address_id'),
     totalAmount: numeric('total_amount', { precision: 12, scale: 2 }),
     status: varchar('status', { length: 30 }).default('pending'),
@@ -197,6 +216,7 @@ export const supabaseSchemaHook = ({ schema }: { schema: any; adapter: any }) =>
             orderItems,
             cartItems,
             payments,
+            profilesSessions,
         },
     }
 }

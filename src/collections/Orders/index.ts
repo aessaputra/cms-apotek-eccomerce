@@ -1,109 +1,118 @@
 import { adminOrCustomerOwner } from '@/access/adminOrCustomerOwner'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
-import {
-  deductStockOnConfirmation,
-  restoreStockOnCancellation
-} from './hooks'
 
 export const OrdersCollection: CollectionOverride = ({ defaultCollection }) => ({
   ...defaultCollection,
   dbName: 'orders',
   admin: {
     ...defaultCollection?.admin,
-    defaultColumns: [
-      'id',
-      'customer',
-      'total',
-      'status',
-      // 'prescription_required', // Disabled for strict schema
-      // 'prescription_verified', // Disabled for strict schema
-      'createdAt'
-    ],
+    defaultColumns: ['id', 'status', 'total', 'createdAt'],
     useAsTitle: 'id',
   },
   access: {
-    ...defaultCollection?.access,
-    // Ensure proper access control for orders
-    // Admins can access all orders, customers can only access their own
     read: adminOrCustomerOwner,
     update: adminOrCustomerOwner,
     delete: adminOrCustomerOwner,
+    create: ({ req }) => Boolean(req.user),
   },
   fields: [
-    ...defaultCollection.fields,
-    // {
-    //   name: 'prescription_required',
-    //   type: 'checkbox',
-    //   defaultValue: false,
-    //   index: true, // Index for prescription order filtering
-    //   admin: {
-    //     description: 'Indicates if this order contains prescription items',
-    //     position: 'sidebar',
-    //     readOnly: true, // This will be set automatically based on products
-    //   },
-    // },
     {
-      name: 'prescription_verified',
-      type: 'checkbox',
-      defaultValue: false,
-      index: true, // Index for verification status filtering
+      name: 'orderedBy',
+      type: 'relationship',
+      relationTo: 'users',
+      required: true,
+      dbName: 'user_id',
       admin: {
-        description: 'Indicates if prescription has been verified by an admin',
-        position: 'sidebar',
-        condition: (data) => data?.prescription_required === true,
-      },
-      access: {
-        update: ({ req: { user } }) => {
-          // Only admins can verify prescriptions
-          return user?.role === 'admin' || false
-        },
+        description: 'Customer who placed the order',
       },
     },
-    // {
-    //   name: 'verified_by',
-    //   type: 'relationship',
-    //   relationTo: 'users',
-    //   admin: {
-    //     description: 'Admin user who verified the prescription',
-    //     position: 'sidebar',
-    //     condition: (data) => data?.prescription_verified === true,
-    //   },
-    //   access: {
-    //     update: ({ req: { user } }) => {
-    //       // Only admins can set who verified
-    //       return user?.role === 'admin' || false
-    //     },
-    //   },
-    //   filterOptions: {
-    //     roles: {
-    //       contains: 'admin',
-    //     },
-    //   },
-    // },
-    // {
-    //   name: 'prescription_notes',
-    //   type: 'textarea',
-    //   admin: {
-    //     description: 'Notes about prescription verification or special instructions',
-    //     position: 'sidebar',
-    //     condition: (data) => data?.prescription_required === true,
-    //   },
-    //   access: {
-    //     update: ({ req: { user } }) => {
-    //       // Only admins can add prescription notes
-    //       return user?.role === 'admin' || false
-    //     },
-    //   },
-    // },
+    {
+      name: 'total',
+      type: 'number',
+      required: true,
+      dbName: 'total_amount',
+      admin: {
+        description: 'Total order amount',
+      },
+    },
+    {
+      name: 'status',
+      type: 'select',
+      dbName: 'status',
+      options: [
+        { label: 'Pending', value: 'pending' },
+        { label: 'Processing', value: 'processing' },
+        { label: 'Shipped', value: 'shipped' },
+        { label: 'Delivered', value: 'delivered' },
+        { label: 'Cancelled', value: 'cancelled' },
+      ],
+      defaultValue: 'pending',
+    },
+    {
+      name: 'items',
+      type: 'array',
+      dbName: 'order_items',
+      fields: [
+        {
+          name: 'product',
+          type: 'relationship',
+          relationTo: 'products',
+          required: true,
+          dbName: 'product_id',
+        },
+        {
+          name: 'price',
+          type: 'number',
+          required: true,
+          admin: {
+            description: 'Price at time of order',
+          },
+        },
+        {
+          name: 'quantity',
+          type: 'number',
+          required: true,
+          min: 1,
+        },
+      ],
+      required: true,
+    },
+    {
+      name: 'shipping_name',
+      type: 'text',
+      required: true,
+      admin: {
+        position: 'sidebar',
+      },
+      dbName: 'shipping_name',
+    },
+    {
+      name: 'shipping_address',
+      type: 'textarea',
+      required: true,
+      admin: {
+        position: 'sidebar',
+      },
+      dbName: 'shipping_address',
+    },
+    {
+      name: 'shipping_phone',
+      type: 'text',
+      required: true,
+      admin: {
+        position: 'sidebar',
+      },
+      dbName: 'shipping_phone',
+    },
+    {
+      name: 'address',
+      type: 'relationship',
+      relationTo: 'addresses',
+      dbName: 'address_id',
+      admin: {
+        position: 'sidebar',
+        description: 'Linked address record',
+      },
+    },
   ],
-  hooks: {
-    // beforeChange: [
-    //   checkPrescriptionRequirements,
-    //   validateStockAvailability,
-    // ],
-    afterChange: [
-      deductStockOnConfirmation,
-      restoreStockOnCancellation,
-    ],
-  },
 })

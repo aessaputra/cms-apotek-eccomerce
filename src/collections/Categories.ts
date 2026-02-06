@@ -1,5 +1,4 @@
 import type { CollectionConfig } from 'payload'
-import { slugField } from 'payload'
 
 import { adminOnly } from '@/access/adminOnly'
 import { publicAccess } from '@/access/publicAccess'
@@ -31,9 +30,15 @@ export const Categories: CollectionConfig = {
         description: 'Category name (e.g., "Pain Relief", "Antibiotics", "Vitamins")',
       },
     },
-    slugField({
-      fieldToUse: 'name',
-    }),
+    {
+      name: 'slug',
+      type: 'text',
+      index: true,
+      unique: true,
+      admin: {
+        position: 'sidebar',
+      },
+    },
     {
       name: 'logo_url',
       type: 'text',

@@ -2,7 +2,6 @@ import { adminOnly } from '@/access/adminOnly'
 import { publicAccess } from '@/access/publicAccess'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
 
-import { slugField } from 'payload'
 import {
   calculateProductAvailability
 } from './hooks'
@@ -35,7 +34,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
 
   },
   fields: [
-    { name: 'title', type: 'text', required: true },
+    { name: 'title', type: 'text', required: true, dbName: 'name' },
     {
       name: 'price',
       type: 'number',
@@ -61,8 +60,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
         },
         {
           fields: [
-            ...defaultCollection.fields, w
-
+            ...defaultCollection.fields,
           ],
           label: 'Product Details',
         },
@@ -80,7 +78,15 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
         sortOptions: 'name', // Categories uses 'name' as title
       },
     },
-    slugField(),
+    {
+      name: 'slug',
+      type: 'text',
+      index: true,
+      unique: true,
+      admin: {
+        position: 'sidebar',
+      },
+    },
   ],
   hooks: {
     beforeValidate: [

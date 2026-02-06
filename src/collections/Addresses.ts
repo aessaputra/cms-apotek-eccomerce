@@ -31,11 +31,11 @@ export const Addresses: CollectionConfig = {
   },
   fields: [
     {
-      name: 'customer',
+      name: 'user',
       type: 'relationship',
       relationTo: 'users',
       required: true,
-      // Note: This maps to user_id in DB via the ecommerce plugin
+      // Maps to user_id in Supabase
       admin: {
         condition: ({ req }) => req.user?.role === 'admin',
       },

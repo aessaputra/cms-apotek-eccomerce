@@ -22,6 +22,8 @@ export const ProductImages: CollectionConfig = {
             type: 'relationship',
             relationTo: 'products',
             required: true,
+            // @ts-expect-error dbName is valid for postgres adapter
+            dbName: 'product_id',
             admin: {
                 description: 'The product this image belongs to',
             },
@@ -53,6 +55,17 @@ export const ProductImages: CollectionConfig = {
                 description: 'Order of display (lower numbers first)',
             },
         },
+        {
+            name: 'created_at',
+            type: 'date',
+            admin: {
+                readOnly: true,
+                date: {
+                    pickerAppearance: 'dayAndTime',
+                },
+            },
+            defaultValue: () => new Date(),
+        },
     ],
-    timestamps: true,
+    timestamps: false,
 }

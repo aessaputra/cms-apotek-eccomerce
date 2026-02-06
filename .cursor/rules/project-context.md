@@ -13,7 +13,8 @@ tags: [project, architecture, overview]
 | Admin Panel | Payload CMS | **This repo** |
 | Mobile App | React Native (Expo) | Separate repo |
 | Database | Supabase PostgreSQL | Shared |
-| Auth | Supabase Auth | Shared |
+| Auth (Admin) | Payload Auth | This repo |
+| Auth (Customer) | Supabase Auth | React Native app |
 | Payments | Midtrans | - |
 | Storage | Supabase Storage | Shared |
 
@@ -44,7 +45,7 @@ src/
 
 ## 📊 Database Schema (Supabase PostgreSQL)
 
-**10 Tables** - See `database-schema-spec.md` for full details.
+**10 Tables** - Use Supabase MCP (`list_tables`) as source of truth and keep `src/db/supabase-schema.ts` aligned.
 
 ### Table Overview
 

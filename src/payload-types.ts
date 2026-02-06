@@ -7,11 +7,6 @@
  */
 
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "OrderStatus".
- */
-export type OrderStatus = ('processing' | 'completed' | 'cancelled' | 'refunded') | null;
-/**
  * Supported timezones in IANA format.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -224,37 +219,31 @@ export interface User {
  */
 export interface Order {
   id: string;
-  items?:
-    | {
-        product?: (string | null) | Product;
-        variant?: (string | null) | Variant;
-        quantity: number;
-        id?: string | null;
-      }[]
-    | null;
-  shippingAddress?: {
-    title?: string | null;
-    firstName?: string | null;
-    lastName?: string | null;
-    company?: string | null;
-    addressLine1?: string | null;
-    addressLine2?: string | null;
-    city?: string | null;
-    state?: string | null;
-    postalCode?: string | null;
-    country?: string | null;
-    phone?: string | null;
-  };
-  customer?: (string | null) | User;
-  customerEmail?: string | null;
-  transactions?: (string | Transaction)[] | null;
-  status?: OrderStatus;
-  amount?: number | null;
-  currency?: 'USD' | null;
   /**
-   * Indicates if prescription has been verified by an admin
+   * Customer who placed the order
    */
-  prescription_verified?: boolean | null;
+  orderedBy: string | User;
+  /**
+   * Total order amount
+   */
+  total: number;
+  status?: ('pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled') | null;
+  items: {
+    product: string | Product;
+    /**
+     * Price at time of order
+     */
+    price: number;
+    quantity: number;
+    id?: string | null;
+  }[];
+  shipping_name: string;
+  shipping_address: string;
+  shipping_phone: string;
+  /**
+   * Linked address record
+   */
+  address?: (string | null) | Address;
   updatedAt: string;
   createdAt: string;
 }
@@ -266,21 +255,7 @@ export interface Product {
   id: string;
   title: string;
   price: number;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
+  description?: string | null;
   inventory?: number | null;
   enableVariants?: boolean | null;
   variantTypes?: (string | VariantType)[] | null;
@@ -292,11 +267,7 @@ export interface Product {
   priceInUSDEnabled?: boolean | null;
   priceInUSD?: number | null;
   category: string | Category;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
+  slug?: string | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
@@ -366,11 +337,7 @@ export interface Category {
    * Category name (e.g., "Pain Relief", "Antibiotics", "Vitamins")
    */
   name: string;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
+  slug?: string | null;
   /**
    * URL of the category logo/icon image
    */
@@ -380,105 +347,11 @@ export interface Category {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "transactions".
- */
-export interface Transaction {
-  id: string;
-  items?:
-    | {
-        product?: (string | null) | Product;
-        variant?: (string | null) | Variant;
-        quantity: number;
-        id?: string | null;
-      }[]
-    | null;
-  paymentMethod?: string | null;
-  midtrans_meta?: {};
-  billingAddress?: {
-    title?: string | null;
-    firstName?: string | null;
-    lastName?: string | null;
-    company?: string | null;
-    addressLine1?: string | null;
-    addressLine2?: string | null;
-    city?: string | null;
-    state?: string | null;
-    postalCode?: string | null;
-    country?: string | null;
-    phone?: string | null;
-  };
-  status?: ('pending' | 'settlement' | 'capture' | 'deny' | 'cancel' | 'expire' | 'failure') | null;
-  customer?: (string | null) | User;
-  customerEmail?: string | null;
-  order?: (string | null) | Order;
-  cart?: (string | null) | Cart;
-  amount?: number | null;
-  currency?: 'USD' | null;
-  midtrans_order_id?: string | null;
-  midtrans_transaction_id?: string | null;
-  midtrans_payment_type?: string | null;
-  paid_at?: string | null;
-  expired_at?: string | null;
-  midtrans_response?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "carts".
- */
-export interface Cart {
-  id: string;
-  items?:
-    | {
-        product?: (string | null) | Product;
-        variant?: (string | null) | Variant;
-        quantity: number;
-        id?: string | null;
-      }[]
-    | null;
-  secret?: string | null;
-  customer?: (string | null) | User;
-  purchasedAt?: string | null;
-  status?: ('active' | 'purchased' | 'abandoned') | null;
-  subtotal?: number | null;
-  currency?: 'USD' | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "cart-items".
- */
-export interface CartItem {
-  id: string;
-  /**
-   * User who owns this cart item
-   */
-  user_id: string | User;
-  product_id: string | Product;
-  /**
-   * Quantity of the product
-   */
-  quantity: number;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "addresses".
  */
 export interface Address {
   id: string;
-  customer?: (string | null) | User;
+  user?: (string | null) | User;
   /**
    * A friendly name for this address (e.g., "Home", "Office")
    */
@@ -507,6 +380,24 @@ export interface Address {
    * Set as the default address for this customer
    */
   is_default?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cart-items".
+ */
+export interface CartItem {
+  id: string;
+  /**
+   * User who owns this cart item
+   */
+  user: string | User;
+  product: string | Product;
+  /**
+   * Quantity of the product
+   */
+  quantity: number;
   updatedAt: string;
   createdAt: string;
 }
@@ -564,8 +455,7 @@ export interface Inventory {
    * Minimum stock level before low stock alert
    */
   low_stock_threshold?: number | null;
-  updatedAt: string;
-  createdAt: string;
+  updated_at?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -589,6 +479,81 @@ export interface ProductImage {
    * Order of display (lower numbers first)
    */
   sort_order?: number | null;
+  created_at?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts".
+ */
+export interface Cart {
+  id: string;
+  items?:
+    | {
+        product?: (string | null) | Product;
+        variant?: (string | null) | Variant;
+        quantity: number;
+        id?: string | null;
+      }[]
+    | null;
+  secret?: string | null;
+  customer?: (string | null) | User;
+  purchasedAt?: string | null;
+  status?: ('active' | 'purchased' | 'abandoned') | null;
+  subtotal?: number | null;
+  currency?: 'USD' | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transactions".
+ */
+export interface Transaction {
+  id: string;
+  items?:
+    | {
+        product?: (string | null) | Product;
+        variant?: (string | null) | Variant;
+        quantity: number;
+        id?: string | null;
+      }[]
+    | null;
+  paymentMethod?: string | null;
+  midtrans_meta?: {};
+  billingAddress?: {
+    title?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    company?: string | null;
+    addressLine1?: string | null;
+    addressLine2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    postalCode?: string | null;
+    country?: string | null;
+    phone?: string | null;
+  };
+  status?: ('pending' | 'settlement' | 'capture' | 'deny' | 'cancel' | 'expire' | 'failure') | null;
+  customer?: (string | null) | User;
+  customerEmail?: string | null;
+  order?: (string | null) | Order;
+  cart?: (string | null) | Cart;
+  amount?: number | null;
+  currency?: 'USD' | null;
+  midtrans_order_id?: string | null;
+  midtrans_transaction_id?: string | null;
+  midtrans_payment_type?: string | null;
+  paid_at?: string | null;
+  expired_at?: string | null;
+  midtrans_response?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -747,8 +712,8 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "cart-items_select".
  */
 export interface CartItemsSelect<T extends boolean = true> {
-  user_id?: T;
-  product_id?: T;
+  user?: T;
+  product?: T;
   quantity?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -759,7 +724,6 @@ export interface CartItemsSelect<T extends boolean = true> {
  */
 export interface CategoriesSelect<T extends boolean = true> {
   name?: T;
-  generateSlug?: T;
   slug?: T;
   logo_url?: T;
   updatedAt?: T;
@@ -792,8 +756,7 @@ export interface InventorySelect<T extends boolean = true> {
   product?: T;
   quantity?: T;
   low_stock_threshold?: T;
-  updatedAt?: T;
-  createdAt?: T;
+  updated_at?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -804,15 +767,14 @@ export interface ProductImagesSelect<T extends boolean = true> {
   image_url?: T;
   is_primary?: T;
   sort_order?: T;
-  updatedAt?: T;
-  createdAt?: T;
+  created_at?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "addresses_select".
  */
 export interface AddressesSelect<T extends boolean = true> {
-  customer?: T;
+  user?: T;
   label?: T;
   recipient_name?: T;
   phone?: T;
@@ -879,7 +841,6 @@ export interface ProductsSelect<T extends boolean = true> {
   priceInUSDEnabled?: T;
   priceInUSD?: T;
   category?: T;
-  generateSlug?: T;
   slug?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -913,36 +874,21 @@ export interface CartsSelect<T extends boolean = true> {
  * via the `definition` "orders_select".
  */
 export interface OrdersSelect<T extends boolean = true> {
+  orderedBy?: T;
+  total?: T;
+  status?: T;
   items?:
     | T
     | {
         product?: T;
-        variant?: T;
+        price?: T;
         quantity?: T;
         id?: T;
       };
-  shippingAddress?:
-    | T
-    | {
-        title?: T;
-        firstName?: T;
-        lastName?: T;
-        company?: T;
-        addressLine1?: T;
-        addressLine2?: T;
-        city?: T;
-        state?: T;
-        postalCode?: T;
-        country?: T;
-        phone?: T;
-      };
-  customer?: T;
-  customerEmail?: T;
-  transactions?: T;
-  status?: T;
-  amount?: T;
-  currency?: T;
-  prescription_verified?: T;
+  shipping_name?: T;
+  shipping_address?: T;
+  shipping_phone?: T;
+  address?: T;
   updatedAt?: T;
   createdAt?: T;
 }

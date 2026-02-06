@@ -2,24 +2,26 @@
 
 ## 🏗️ Project Overview
 
-This repository contains the **Payload CMS admin panel** for the Apotek E-commerce platform.
+This repository contains the **Payload CMS admin panel** for the Apotek E-commerce platform (Headless CMS).
 
 | Component | Technology | Repository |
 |-----------|------------|------------|
 | **Admin Panel** | Payload CMS | **This repo** (cms-apotek-eccommerce) |
 | Customer Mobile App | React Native (Expo) | Separate repo |
 | Database | Supabase PostgreSQL | Shared database |
-| Auth (Customers) | Supabase Auth | Via React Native |
 | Auth (Admin) | Payload Auth | This repo |
+| Auth (Customers) | Supabase Auth | Via React Native |
 | Payments | Midtrans | Both platforms |
 
 ### Database Schema
 
-See `database-schema-spec.md` for complete schema. Tables: `profiles`, `addresses`, `categories`, `products`, `product_images`, `inventory`, `orders`, `order_items`, `cart_items`, `payments`.
+Use Supabase MCP (e.g. `list_tables`) as the source of truth and keep `src/db/supabase-schema.ts` aligned. Core tables: `profiles`, `addresses`, `categories`, `products`, `product_images`, `inventory`, `orders`, `order_items`, `cart_items`, `payments`.
 
 ### Supabase Integration
 
 This Payload CMS instance uses `@payloadcms/db-postgres` to connect to Supabase PostgreSQL. See `.cursor/rules/supabase-integration.md` for configuration details.
+
+**Live schema reference**: use Supabase MCP (e.g. `list_tables`) as the source of truth, then keep `src/db/supabase-schema.ts` aligned.
 
 ---
 
@@ -46,7 +48,6 @@ You are an expert Payload CMS developer. When working with Payload projects, fol
 ```
 src/
 ├── app/
-│   ├── (frontend)/          # Frontend routes
 │   └── (payload)/           # Payload admin routes
 ├── collections/             # Collection configs
 ├── globals/                 # Global configs
@@ -61,31 +62,87 @@ src/
 ### Minimal Config Pattern
 
 ```typescript
-import { buildConfig } from 'payload'
-import { mongooseAdapter } from '@payloadcms/db-mongodb'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { postgresAdapter } from '@payloadcms/db-postgres'
+import {
+  BoldFeature,
+  EXPERIMENTAL_TableFeature,
+  IndentFeature,
+  ItalicFeature,
+  LinkFeature,
+  OrderedListFeature,
+  UnderlineFeature,
+  UnorderedListFeature,
+  lexicalEditor,
+} from '@payloadcms/richtext-lexical'
 import path from 'path'
+import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
+
+import { CartItems } from '@/collections/CartItems'
+import { Categories } from '@/collections/Categories'
+import { Inventory } from '@/collections/Inventory'
+import { Media } from '@/collections/Media'
+import { ProductImages } from '@/collections/ProductImages'
+import { Users } from '@/collections/Users'
+import { supabaseSchemaHook } from '@/db/supabase-schema'
+import { pharmacyEndpoints } from '@/endpoints'
+import { plugins } from '@/plugins'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
   admin: {
-    user: 'users',
-    importMap: {
-      baseDir: path.resolve(dirname),
-    },
+    user: Users.slug,
   },
-  collections: [Users, Media],
-  editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET,
+  collections: [Users, CartItems, Categories, Media, Inventory, ProductImages],
+  db: postgresAdapter({
+    pool: {
+      connectionString: process.env.DATABASE_URL || '',
+    },
+    idType: 'uuid',
+    push: false,
+    beforeSchemaInit: [supabaseSchemaHook],
+  }),
+  editor: lexicalEditor({
+    features: () => [
+      UnderlineFeature(),
+      BoldFeature(),
+      ItalicFeature(),
+      OrderedListFeature(),
+      UnorderedListFeature(),
+      LinkFeature({
+        enabledCollections: [],
+        fields: ({ defaultFields }) => {
+          const defaultFieldsWithoutUrl = defaultFields.filter((field) => {
+            if ('name' in field && field.name === 'url') return false
+            return true
+          })
+
+          return [
+            ...defaultFieldsWithoutUrl,
+            {
+              name: 'url',
+              type: 'text',
+              admin: {
+                condition: ({ linkType }) => linkType !== 'internal',
+              },
+              label: ({ t }) => t('fields:enterURL'),
+              required: true,
+            },
+          ]
+        },
+      }),
+      IndentFeature(),
+      EXPERIMENTAL_TableFeature(),
+    ],
+  }),
+  endpoints: pharmacyEndpoints,
+  plugins,
+  secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
-  db: mongooseAdapter({
-    url: process.env.DATABASE_URL,
-  }),
 })
 ```
 
@@ -1004,6 +1061,15 @@ export const myPlugin =
 ```
 
 ## Best Practices
+
+### Payload Docs Summary
+
+1. Prefer Server Components; add `'use client'` only when you need state, effects, or event handlers.
+2. Use `overrideAccess: false` whenever you pass `user` to Local API calls.
+3. Always pass `req` to nested operations inside hooks to keep transactions atomic.
+4. Use context flags (e.g., `context.skipHooks`) to prevent hook loops.
+5. Limit `depth` and use `select` to reduce over-fetching.
+6. Use generated `payload-types.ts` for type-safe access control.
 
 ### Security
 

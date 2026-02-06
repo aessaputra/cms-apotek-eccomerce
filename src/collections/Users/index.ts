@@ -84,7 +84,7 @@ export const Users: CollectionConfig = {
       name: 'orders',
       type: 'join',
       collection: 'orders',
-      on: 'customer',
+      on: 'orderedBy', // Matches 'orderedBy' field in Orders collection
       admin: {
         allowCreate: false,
         defaultColumns: ['id', 'createdAt', 'total', 'currency', 'items'],
@@ -94,7 +94,7 @@ export const Users: CollectionConfig = {
       name: 'cart_items',
       type: 'join',
       collection: 'cart-items',
-      on: 'user_id',
+      on: 'user', // Renamed to 'user' in CartItems collection
       admin: {
         allowCreate: true,
         defaultColumns: ['product_id', 'quantity'],
@@ -104,7 +104,7 @@ export const Users: CollectionConfig = {
       name: 'addresses',
       type: 'join',
       collection: 'addresses',
-      on: 'customer',
+      on: 'user',
       admin: {
         allowCreate: false,
         defaultColumns: ['id'],

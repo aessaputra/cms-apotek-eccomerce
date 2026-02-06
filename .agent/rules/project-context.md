@@ -14,7 +14,8 @@ This repository contains the **Payload CMS admin panel** for Apotek E-commerce.
 | Admin Panel | Payload CMS | This repo |
 | Mobile App | React Native (Expo) | Separate repo |
 | Database | Supabase PostgreSQL | Shared |
-| Auth | Supabase Auth | Shared |
+| Auth (Admin) | Payload Auth | This repo |
+| Auth (Customer) | Supabase Auth | React Native app |
 | Payments | Midtrans | Both |
 | Storage | Supabase Storage | Shared |
 
@@ -32,4 +33,4 @@ This repository contains the **Payload CMS admin panel** for Apotek E-commerce.
 - `cart_items` - Shopping cart (React Native only)
 - `payments` - Midtrans payments
 
-See `database-schema-spec.md` for full schema.
+Use Supabase MCP (`list_tables`) as the source of truth and keep `src/db/supabase-schema.ts` aligned.

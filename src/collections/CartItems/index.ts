@@ -6,8 +6,8 @@ export const CartItems: CollectionConfig = {
     slug: 'cart-items',
     dbName: 'cart_items', // Strict mapping to Supabase 'cart_items' table
     admin: {
-        useAsTitle: 'product_id',
-        defaultColumns: ['product_id', 'quantity', 'user_id'],
+        useAsTitle: 'product',
+        defaultColumns: ['product', 'quantity', 'user'],
     },
     access: {
         create: adminOrUserId,
@@ -17,10 +17,12 @@ export const CartItems: CollectionConfig = {
     },
     fields: [
         {
-            name: 'user_id',
+            name: 'user',
             type: 'relationship',
             relationTo: 'users',
             required: true,
+            // @ts-expect-error dbName is valid for postgres adapter
+            dbName: 'user_id',
             access: {
                 update: adminOnlyFieldAccess, // Users shouldn't change the owner of an item
             },
@@ -29,9 +31,11 @@ export const CartItems: CollectionConfig = {
             },
         },
         {
-            name: 'product_id',
+            name: 'product',
             type: 'relationship',
             relationTo: 'products',
+            // @ts-expect-error dbName is valid for postgres adapter
+            dbName: 'product_id',
             required: true,
         },
         {

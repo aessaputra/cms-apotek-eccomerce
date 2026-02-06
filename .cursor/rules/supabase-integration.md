@@ -17,7 +17,7 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 export default buildConfig({
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.SUPABASE_DATABASE_URL,
+      connectionString: process.env.DATABASE_URL,
     },
   }),
   // ... other config
@@ -28,7 +28,7 @@ export default buildConfig({
 
 ```env
 # Supabase PostgreSQL Connection (use connection pooler for serverless)
-SUPABASE_DATABASE_URL=postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres
+DATABASE_URL=postgresql://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres
 
 # For direct connection (migrations)
 SUPABASE_DIRECT_URL=postgresql://postgres.[project-ref]:[password]@aws-0-[region].supabase.com:5432/postgres
@@ -46,6 +46,8 @@ This is intentional for admin operations, but be aware:
 ---
 
 ## 📊 Database Schema Reference
+
+Use Supabase MCP (`list_tables`) as the source of truth, then keep `src/db/supabase-schema.ts` aligned.
 
 ### Tables & Columns
 

@@ -16,7 +16,7 @@ export const Inventory: CollectionConfig = {
   dbName: 'inventory',
   admin: {
     useAsTitle: 'id',
-    defaultColumns: ['product', 'quantity', 'low_stock_threshold', 'updatedAt'],
+    defaultColumns: ['product', 'quantity', 'low_stock_threshold', 'updated_at'],
     group: 'Pharmacy Management',
     description: 'Stock management per product',
   },
@@ -83,8 +83,18 @@ export const Inventory: CollectionConfig = {
         return true
       },
     },
+    {
+      name: 'updated_at',
+      type: 'date',
+      admin: {
+        readOnly: true,
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+      },
+    },
   ],
-  timestamps: true,
+  timestamps: false,
   hooks: {
     beforeChange: [
       async ({ data, operation, originalDoc, req }) => {

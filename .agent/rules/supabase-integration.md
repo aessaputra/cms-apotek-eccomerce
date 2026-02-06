@@ -9,7 +9,7 @@ description: >-
 
 * Use `@payloadcms/db-postgres` adapter to connect to Supabase PostgreSQL
 * Connection string uses Supabase connection pooler for serverless environment
-* Environment variable: `SUPABASE_DATABASE_URL`
+* Environment variable: `DATABASE_URL` (Payload uses this in `src/payload.config.ts`)
 
 ## RLS Considerations
 
@@ -19,7 +19,9 @@ description: >-
 
 ## Schema Reference
 
-Tables and columns - matches Supabase exactly:
+Use Supabase MCP (`list_tables`) as the source of truth, then keep `src/db/supabase-schema.ts` aligned.
+
+Tables and columns (snapshot):
 
 * `profiles`: id, email, full_name, phone, role, created_at, updated_at
 * `addresses`: id, user_id, label, recipient_name, phone, address_line, city, postal_code, is_default, created_at, updated_at
