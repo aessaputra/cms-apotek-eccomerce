@@ -1,6 +1,5 @@
 import { adminOnly } from '@/access/adminOnly'
 import { publicAccess } from '@/access/publicAccess'
-import { generatePreviewPath } from '@/utilities/generatePreviewPath'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
 
 import {
@@ -21,20 +20,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
   admin: {
     ...defaultCollection?.admin,
     defaultColumns: ['title', '_status'],
-    livePreview: {
-      url: ({ data, req }) =>
-        generatePreviewPath({
-          slug: data?.slug,
-          collection: 'products',
-          req,
-        }),
-    },
-    preview: (data, { req }) =>
-      generatePreviewPath({
-        slug: data?.slug as string,
-        collection: 'products',
-        req,
-      }),
+
     useAsTitle: 'title',
   },
   access: {
