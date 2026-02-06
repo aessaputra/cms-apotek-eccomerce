@@ -125,7 +125,7 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: number;
+    defaultIDType: string;
   };
   fallbackLocale: null;
   globals: {};
@@ -178,7 +178,7 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: number;
+  id: string;
   full_name?: string | null;
   /**
    * Primary phone number for prescription verification and order notifications
@@ -186,17 +186,17 @@ export interface User {
   phone: string;
   role?: ('admin' | 'customer') | null;
   orders?: {
-    docs?: (number | Order)[];
+    docs?: (string | Order)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
   cart_items?: {
-    docs?: (number | CartItem)[];
+    docs?: (string | CartItem)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
   addresses?: {
-    docs?: (number | Address)[];
+    docs?: (string | Address)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -223,11 +223,11 @@ export interface User {
  * via the `definition` "orders".
  */
 export interface Order {
-  id: number;
+  id: string;
   items?:
     | {
-        product?: (number | null) | Product;
-        variant?: (number | null) | Variant;
+        product?: (string | null) | Product;
+        variant?: (string | null) | Variant;
         quantity: number;
         id?: string | null;
       }[]
@@ -245,9 +245,9 @@ export interface Order {
     country?: string | null;
     phone?: string | null;
   };
-  customer?: (number | null) | User;
+  customer?: (string | null) | User;
   customerEmail?: string | null;
-  transactions?: (number | Transaction)[] | null;
+  transactions?: (string | Transaction)[] | null;
   status?: OrderStatus;
   amount?: number | null;
   currency?: 'USD' | null;
@@ -263,7 +263,7 @@ export interface Order {
  * via the `definition` "products".
  */
 export interface Product {
-  id: number;
+  id: string;
   title: string;
   price: number;
   description?: {
@@ -283,15 +283,15 @@ export interface Product {
   } | null;
   inventory?: number | null;
   enableVariants?: boolean | null;
-  variantTypes?: (number | VariantType)[] | null;
+  variantTypes?: (string | VariantType)[] | null;
   variants?: {
-    docs?: (number | Variant)[];
+    docs?: (string | Variant)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
   priceInUSDEnabled?: boolean | null;
   priceInUSD?: number | null;
-  category: number | Category;
+  category: string | Category;
   /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
@@ -307,11 +307,11 @@ export interface Product {
  * via the `definition` "variantTypes".
  */
 export interface VariantType {
-  id: number;
+  id: string;
   label: string;
   name: string;
   options?: {
-    docs?: (number | VariantOption)[];
+    docs?: (string | VariantOption)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -324,9 +324,9 @@ export interface VariantType {
  * via the `definition` "variantOptions".
  */
 export interface VariantOption {
-  id: number;
+  id: string;
   _variantOptions_options_order?: string | null;
-  variantType: number | VariantType;
+  variantType: string | VariantType;
   label: string;
   /**
    * should be defaulted or dynamic based on label
@@ -341,13 +341,13 @@ export interface VariantOption {
  * via the `definition` "variants".
  */
 export interface Variant {
-  id: number;
+  id: string;
   /**
    * Used for administrative purposes, not shown to customers. This is populated by default.
    */
   title?: string | null;
-  product: number | Product;
-  options: (number | VariantOption)[];
+  product: string | Product;
+  options: (string | VariantOption)[];
   inventory?: number | null;
   priceInUSDEnabled?: boolean | null;
   priceInUSD?: number | null;
@@ -361,7 +361,7 @@ export interface Variant {
  * via the `definition` "categories".
  */
 export interface Category {
-  id: number;
+  id: string;
   /**
    * Category name (e.g., "Pain Relief", "Antibiotics", "Vitamins")
    */
@@ -383,11 +383,11 @@ export interface Category {
  * via the `definition` "transactions".
  */
 export interface Transaction {
-  id: number;
+  id: string;
   items?:
     | {
-        product?: (number | null) | Product;
-        variant?: (number | null) | Variant;
+        product?: (string | null) | Product;
+        variant?: (string | null) | Variant;
         quantity: number;
         id?: string | null;
       }[]
@@ -408,10 +408,10 @@ export interface Transaction {
     phone?: string | null;
   };
   status?: ('pending' | 'settlement' | 'capture' | 'deny' | 'cancel' | 'expire' | 'failure') | null;
-  customer?: (number | null) | User;
+  customer?: (string | null) | User;
   customerEmail?: string | null;
-  order?: (number | null) | Order;
-  cart?: (number | null) | Cart;
+  order?: (string | null) | Order;
+  cart?: (string | null) | Cart;
   amount?: number | null;
   currency?: 'USD' | null;
   midtrans_order_id?: string | null;
@@ -436,17 +436,17 @@ export interface Transaction {
  * via the `definition` "carts".
  */
 export interface Cart {
-  id: number;
+  id: string;
   items?:
     | {
-        product?: (number | null) | Product;
-        variant?: (number | null) | Variant;
+        product?: (string | null) | Product;
+        variant?: (string | null) | Variant;
         quantity: number;
         id?: string | null;
       }[]
     | null;
   secret?: string | null;
-  customer?: (number | null) | User;
+  customer?: (string | null) | User;
   purchasedAt?: string | null;
   status?: ('active' | 'purchased' | 'abandoned') | null;
   subtotal?: number | null;
@@ -459,12 +459,12 @@ export interface Cart {
  * via the `definition` "cart-items".
  */
 export interface CartItem {
-  id: number;
+  id: string;
   /**
    * User who owns this cart item
    */
-  user_id: number | User;
-  product_id: number | Product;
+  user_id: string | User;
+  product_id: string | Product;
   /**
    * Quantity of the product
    */
@@ -477,8 +477,8 @@ export interface CartItem {
  * via the `definition` "addresses".
  */
 export interface Address {
-  id: number;
-  customer?: (number | null) | User;
+  id: string;
+  customer?: (string | null) | User;
   /**
    * A friendly name for this address (e.g., "Home", "Office")
    */
@@ -515,7 +515,7 @@ export interface Address {
  * via the `definition` "media".
  */
 export interface Media {
-  id: number;
+  id: string;
   alt: string;
   caption?: {
     root: {
@@ -551,11 +551,11 @@ export interface Media {
  * via the `definition` "inventory".
  */
 export interface Inventory {
-  id: number;
+  id: string;
   /**
    * The product this inventory belongs to (1:1 relationship)
    */
-  product: number | Product;
+  product: string | Product;
   /**
    * Current available quantity
    */
@@ -572,11 +572,11 @@ export interface Inventory {
  * via the `definition` "product-images".
  */
 export interface ProductImage {
-  id: number;
+  id: string;
   /**
    * The product this image belongs to
    */
-  product: number | Product;
+  product: string | Product;
   /**
    * Full URL of the product image
    */
@@ -597,7 +597,7 @@ export interface ProductImage {
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: number;
+  id: string;
   key: string;
   data:
     | {
@@ -614,68 +614,68 @@ export interface PayloadKv {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: number;
+  id: string;
   document?:
     | ({
         relationTo: 'users';
-        value: number | User;
+        value: string | User;
       } | null)
     | ({
         relationTo: 'cart-items';
-        value: number | CartItem;
+        value: string | CartItem;
       } | null)
     | ({
         relationTo: 'categories';
-        value: number | Category;
+        value: string | Category;
       } | null)
     | ({
         relationTo: 'media';
-        value: number | Media;
+        value: string | Media;
       } | null)
     | ({
         relationTo: 'inventory';
-        value: number | Inventory;
+        value: string | Inventory;
       } | null)
     | ({
         relationTo: 'product-images';
-        value: number | ProductImage;
+        value: string | ProductImage;
       } | null)
     | ({
         relationTo: 'addresses';
-        value: number | Address;
+        value: string | Address;
       } | null)
     | ({
         relationTo: 'variants';
-        value: number | Variant;
+        value: string | Variant;
       } | null)
     | ({
         relationTo: 'variantTypes';
-        value: number | VariantType;
+        value: string | VariantType;
       } | null)
     | ({
         relationTo: 'variantOptions';
-        value: number | VariantOption;
+        value: string | VariantOption;
       } | null)
     | ({
         relationTo: 'products';
-        value: number | Product;
+        value: string | Product;
       } | null)
     | ({
         relationTo: 'carts';
-        value: number | Cart;
+        value: string | Cart;
       } | null)
     | ({
         relationTo: 'orders';
-        value: number | Order;
+        value: string | Order;
       } | null)
     | ({
         relationTo: 'transactions';
-        value: number | Transaction;
+        value: string | Transaction;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -685,10 +685,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: number;
+  id: string;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   key?: string | null;
   value?:
@@ -708,7 +708,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: number;
+  id: string;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;

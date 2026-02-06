@@ -2,13 +2,6 @@ import { adminOnly } from '@/access/adminOnly'
 import { publicAccess } from '@/access/publicAccess'
 import { CollectionOverride } from '@payloadcms/plugin-ecommerce/types'
 
-import {
-  FixedToolbarFeature,
-  HeadingFeature,
-  HorizontalRuleFeature,
-  InlineToolbarFeature,
-  lexicalEditor,
-} from '@payloadcms/richtext-lexical'
 import { slugField } from 'payload'
 import {
   calculateProductAvailability
@@ -58,19 +51,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
           fields: [
             {
               name: 'description',
-              type: 'richText',
-              editor: lexicalEditor({
-                features: ({ rootFeatures }) => {
-                  return [
-                    ...rootFeatures,
-                    HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-                    FixedToolbarFeature(),
-                    InlineToolbarFeature(),
-                    HorizontalRuleFeature(),
-                  ]
-                },
-              }),
-              label: false,
+              type: 'textarea',
               required: false,
             },
 
@@ -80,69 +61,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
         },
         {
           fields: [
-            ...defaultCollection.fields,
-            // Non-schema fields disabled for strict compliance
-            // {
-            //   name: 'generic_name',
-            //   type: 'text',
-            //   index: true, // Index for search functionality
-            //   admin: {
-            //     description: 'Scientific/generic name of the drug (e.g., "Acetaminophen" for Tylenol)',
-            //     position: 'sidebar',
-            //   },
-            // },
-            // {
-            //   name: 'manufacturer',
-            //   type: 'text',
-            //   index: true, // Index for manufacturer filtering
-            //   admin: {
-            //     description: 'Manufacturer or brand name (e.g., "Johnson & Johnson", "Pfizer")',
-            //     position: 'sidebar',
-            //   },
-            // },
-            // {
-            //   name: 'dosage_form',
-            //   type: 'select',
-            //   options: [
-            //     { label: 'Tablet', value: 'tablet' },
-            //     { label: 'Capsule', value: 'capsule' },
-            //     { label: 'Syrup', value: 'syrup' },
-            //     { label: 'Liquid', value: 'liquid' },
-            //     { label: 'Cream', value: 'cream' },
-            //     { label: 'Ointment', value: 'ointment' },
-            //     { label: 'Gel', value: 'gel' },
-            //     { label: 'Injection', value: 'injection' },
-            //     { label: 'Drops', value: 'drops' },
-            //     { label: 'Spray', value: 'spray' },
-            //     { label: 'Patch', value: 'patch' },
-            //     { label: 'Powder', value: 'powder' },
-            //     { label: 'Suppository', value: 'suppository' },
-            //     { label: 'Inhaler', value: 'inhaler' },
-            //     { label: 'Other', value: 'other' },
-            //   ],
-            //   admin: {
-            //     description: 'Physical form of the medication',
-            //     position: 'sidebar',
-            //   },
-            // },
-            // {
-            //   name: 'strength',
-            //   type: 'text',
-            //   admin: {
-            //     description: 'Strength/concentration of the medication (e.g., "500mg", "10ml", "2.5%")',
-            //     position: 'sidebar',
-            //   },
-            // },
-            // {
-            //   name: 'requires_prescription',
-            //   type: 'checkbox',
-            //   defaultValue: false,
-            //   index: true, // Index for prescription filtering
-            //   admin: {
-            //     description: 'Check if this product requires a prescription to purchase',
-            //     position: 'sidebar',
-            //   },
-            // },
+            ...defaultCollection.fields, w
 
           ],
           label: 'Product Details',

@@ -21,6 +21,7 @@ import { Media } from '@/collections/Media'
 
 import { ProductImages } from '@/collections/ProductImages'
 import { Users } from '@/collections/Users'
+import { supabaseSchemaHook } from '@/db/supabase-schema'
 import { pharmacyEndpoints } from '@/endpoints'
 import { plugins } from './plugins'
 
@@ -37,6 +38,11 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
+    idType: 'uuid',
+    // Disable auto schema push - prevents Payload from modifying existing Supabase tables
+    push: false,
+    // Register existing Supabase tables to prevent conflicts
+    beforeSchemaInit: [supabaseSchemaHook],
   }),
   editor: lexicalEditor({
     features: () => {
