@@ -14,12 +14,6 @@ importers:
       '@payloadcms/db-postgres':
         specifier: 3.74.0
         version: 3.74.0(payload@3.74.0(graphql@16.12.0)(typescript@5.7.2))
-      '@payloadcms/email-nodemailer':
-        specifier: 3.74.0
-        version: 3.74.0(payload@3.74.0(graphql@16.12.0)(typescript@5.7.2))
-      '@payloadcms/live-preview-react':
-        specifier: 3.74.0
-        version: 3.74.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
       '@payloadcms/next':
         specifier: 3.74.0
         version: 3.74.0(@types/react@19.2.9)(graphql@16.12.0)(monaco-editor@0.55.1)(next@15.4.11(@babel/core@7.29.0)(@playwright/test@1.56.1)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(sass@1.77.4))(payload@3.74.0(graphql@16.12.0)(typescript@5.7.2))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.2)
@@ -35,15 +29,6 @@ importers:
       '@payloadcms/ui':
         specifier: 3.74.0
         version: 3.74.0(@types/react@19.2.9)(monaco-editor@0.55.1)(next@15.4.11(@babel/core@7.29.0)(@playwright/test@1.56.1)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(sass@1.77.4))(payload@3.74.0(graphql@16.12.0)(typescript@5.7.2))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.2)
-      '@stripe/stripe-js':
-        specifier: ^4.0.0
-        version: 4.10.0
-      class-variance-authority:
-        specifier: ^0.7.0
-        version: 0.7.1
-      clsx:
-        specifier: ^2.1.0
-        version: 2.1.1
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -59,9 +44,6 @@ importers:
       jsonwebtoken:
         specifier: 9.0.1
         version: 9.0.1
-      lucide-react:
-        specifier: ^0.477.0
-        version: 0.477.0(react@19.2.1)
       midtrans-client:
         specifier: ^1.4.3
         version: 1.4.3
@@ -80,21 +62,9 @@ importers:
       react-dom:
         specifier: 19.2.1
         version: 19.2.1(react@19.2.1)
-      react-hook-form:
-        specifier: 7.54.1
-        version: 7.54.1(react@19.2.1)
       sharp:
         specifier: 0.34.2
         version: 0.34.2
-      sonner:
-        specifier: ^1.7.2
-        version: 1.7.4(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
-      stripe:
-        specifier: 18.5.0
-        version: 18.5.0(@types/node@22.5.4)
-      tailwind-merge:
-        specifier: ^3.4.0
-        version: 3.4.0
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3.2.0
@@ -1395,27 +1365,12 @@ packages:
     peerDependencies:
       payload: 3.74.0
 
-  '@payloadcms/email-nodemailer@3.74.0':
-    resolution: {integrity: sha512-OYBdBs/bFOlpUtwibLTXjEuozWAlJ7DhF7GHwIyUJYI79+6IZQZkxqQYke1qLxIVU5AN0Mb2lw325sNoYyTBzQ==}
-    engines: {node: ^18.20.2 || >=20.9.0}
-    peerDependencies:
-      payload: 3.74.0
-
   '@payloadcms/graphql@3.74.0':
     resolution: {integrity: sha512-feMqBd+Mm4HJm34Ba2FBMCN7cqpUXyWU9uX2PHjnk20Ys9EbyTVccjyRU2k+jDFcjHhC0P2QAYJWYd2Pj5n7gg==}
     hasBin: true
     peerDependencies:
       graphql: ^16.8.1
       payload: 3.74.0
-
-  '@payloadcms/live-preview-react@3.74.0':
-    resolution: {integrity: sha512-/ItgTm+xlHT0tlv93Dmyb/NXB9N1rqTRzd4PfA45ZVN392xl6JtjfjKbafJ0inRBjK6eE8J73DVfmDvJMZV7NA==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.1 || ^19.1.2 || ^19.2.1
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.1 || ^19.1.2 || ^19.2.1
-
-  '@payloadcms/live-preview@3.74.0':
-    resolution: {integrity: sha512-pp77TUCSajma2ml9d0oxgaRf4PySDhkzn7bK9OrjPBI+mAYC72K7FwAAeBYidn8REfgaCwS1hMAv52IUskxRWA==}
 
   '@payloadcms/next@3.74.0':
     resolution: {integrity: sha512-OfiUmCdhqgAGbN99FSQYfmJeHBdwUDzx2WlP4fxDeOW6LpnHNaipq9gvk1535+V0mPJXRRWIYQf3yPIxC9nOeA==}
@@ -1596,10 +1551,6 @@ packages:
 
   '@rushstack/eslint-patch@1.15.0':
     resolution: {integrity: sha512-ojSshQPKwVvSMR8yT2L/QtUkV5SXi/IfDiJ4/8d6UbTPjiHVmxZzUAzGD8Tzks1b9+qQkZa0isUOvYObedITaw==}
-
-  '@stripe/stripe-js@4.10.0':
-    resolution: {integrity: sha512-KrMOL+sH69htCIXCaZ4JluJ35bchuCCznyPyrbN8JXSGQfwBI1SuIEMZNwvy8L8ykj29t6sa5BAAiL7fNoLZ8A==}
-    engines: {node: '>=12.16'}
 
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
@@ -2246,9 +2197,6 @@ packages:
   ci-info@4.4.0:
     resolution: {integrity: sha512-77PSwercCZU2Fc4sX94eF8k8Pxte6JAwL4/ICZLFjJLqegs7kCuAsqqj/70NQF6TvDpgFjkubQB2FW2ZZddvQg==}
     engines: {node: '>=8'}
-
-  class-variance-authority@0.7.1:
-    resolution: {integrity: sha512-Ka+9Trutv7G8M6WT6SeiRWz792K5qEqIGEGzXKhAE6xOWAY6pPH8U+9IY3oCMv6kqTmLsv7Xh/2w2RigkePMsg==}
 
   cli-cursor@5.0.0:
     resolution: {integrity: sha512-aCj4O5wKyszjMmDT4tZj93kxyydN/K5zPWSCe6/0AV/AA1pqe5ZBIw0a2ZfPQV7lL5/yb5HsUreJ6UFAF1tEQw==}
@@ -3431,11 +3379,6 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lucide-react@0.477.0:
-    resolution: {integrity: sha512-yCf7aYxerFZAbd8jHJxjwe1j7jEMPptjnaOqdYeirFnEy85cNR3/L+o0I875CYFYya+eEVzZSbNuRk8BZPDpVw==}
-    peerDependencies:
-      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
     hasBin: true
@@ -3627,10 +3570,6 @@ packages:
 
   node-releases@2.0.27:
     resolution: {integrity: sha512-nmh3lCkYZ3grZvqcCH+fjmQ7X+H0OeZgP40OierEaAptX4XofMh5kwNbWh7lBduUzCcV/8kZ+NDLCwm2iorIlA==}
-
-  nodemailer@7.0.12:
-    resolution: {integrity: sha512-H+rnK5bX2Pi/6ms3sN4/jRQvYSMltV6vqup/0SFOrxYYY/qoNvhXPlYq3e+Pm9RFJRwrMGbMIwi81M4dxpomhA==}
-    engines: {node: '>=6.0.0'}
 
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
@@ -4009,10 +3948,6 @@ packages:
     resolution: {integrity: sha512-8jbjCR0PPbqoQcv83C2K/zvVeytRPwPpt3WPDbq51qyLAxcWGtXVRjSe6GHtLCoVbg9+NEFkv7GyUxqjcDIJzw==}
     engines: {node: '>=18'}
 
-  qs@6.14.1:
-    resolution: {integrity: sha512-4EK3+xJl8Ts67nLYNwqw/dsFVnCf+qR7RgXSK9jEEm9unao3njwMDdmsdvoKBKHzxd7tCYz5e5M+SnMjdtXGQQ==}
-    engines: {node: '>=0.6'}
-
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
@@ -4044,12 +3979,6 @@ packages:
     resolution: {integrity: sha512-GQDxZ5Jd+Aq/qUxbCm1UtzmL/s++V7zKgE8yMktJiCQXCCFZnMZh9ng+6/Ne6PjNSXH0L9CjeOEREfRnq6Duag==}
     peerDependencies:
       react: '>=16.13.1'
-
-  react-hook-form@7.54.1:
-    resolution: {integrity: sha512-PUNzFwQeQ5oHiiTUO7GO/EJXGEtuun2Y1A59rLnZBBj+vNEOWt/3ERTiG1/zt7dVeJEM+4vDX/7XQ/qanuvPMg==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      react: ^16.8.0 || ^17 || ^18 || ^19
 
   react-image-crop@10.1.8:
     resolution: {integrity: sha512-4rb8XtXNx7ZaOZarKKnckgz4xLMvds/YrU6mpJfGhGAsy2Mg4mIw1x+DCCGngVGq2soTBVVOxx2s/C6mTX9+pA==}
@@ -4365,15 +4294,6 @@ packages:
   strip-literal@3.1.0:
     resolution: {integrity: sha512-8r3mkIM/2+PpjHoOtiAW8Rg3jJLHaV7xPwG+YRGrv6FP0wwk/toTpATxWYOW0BKdWwl82VT2tFYi5DlROa0Mxg==}
 
-  stripe@18.5.0:
-    resolution: {integrity: sha512-Hp+wFiEQtCB0LlNgcFh5uVyKznpDjzyUZ+CNVEf+I3fhlYvh7rZruIg+jOwzJRCpy0ZTPMjlzm7J2/M2N6d+DA==}
-    engines: {node: '>=12.*'}
-    peerDependencies:
-      '@types/node': '>=12.x.x'
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
-
   strtok3@8.1.0:
     resolution: {integrity: sha512-ExzDvHYPj6F6QkSNe/JxSlBxTh3OrI6wrAIz53ulxo1c4hBJ1bT9C/JrAthEKHWG9riVH3Xzg7B03Oxty6S2Lw==}
     engines: {node: '>=16'}
@@ -4407,9 +4327,6 @@ packages:
 
   tabbable@6.4.0:
     resolution: {integrity: sha512-05PUHKSNE8ou2dwIxTngl4EzcnsCDZGJ/iCLtDflR/SHB/ny14rXc+qU5P4mG9JkusiV7EivzY9Mhm55AzAvCg==}
-
-  tailwind-merge@3.4.0:
-    resolution: {integrity: sha512-uSaO4gnW+b3Y2aWoWfFpX62vn2sR3skfhbjsEnaBI81WD1wBLlHZe5sWf0AqjksNdYTbGBEd0UasQMT3SNV15g==}
 
   tailwindcss@4.1.18:
     resolution: {integrity: sha512-4+Z+0yiYyEtUVCScyfHCxOYP06L5Ne+JiHhY2IjR2KWMIWhJOYZKLSGZaP5HkZ8+bY0cxfzwDE5uOmzFXyIwxw==}
@@ -5909,11 +5826,6 @@ snapshots:
       - sql.js
       - sqlite3
 
-  '@payloadcms/email-nodemailer@3.74.0(payload@3.74.0(graphql@16.12.0)(typescript@5.7.2))':
-    dependencies:
-      nodemailer: 7.0.12
-      payload: 3.74.0(graphql@16.12.0)(typescript@5.7.2)
-
   '@payloadcms/graphql@3.74.0(graphql@16.12.0)(payload@3.74.0(graphql@16.12.0)(typescript@5.7.2))(typescript@5.7.2)':
     dependencies:
       graphql: 16.12.0
@@ -5924,14 +5836,6 @@ snapshots:
       tsx: 4.21.0
     transitivePeerDependencies:
       - typescript
-
-  '@payloadcms/live-preview-react@3.74.0(react-dom@19.2.1(react@19.2.1))(react@19.2.1)':
-    dependencies:
-      '@payloadcms/live-preview': 3.74.0
-      react: 19.2.1
-      react-dom: 19.2.1(react@19.2.1)
-
-  '@payloadcms/live-preview@3.74.0': {}
 
   '@payloadcms/next@3.74.0(@types/react@19.2.9)(graphql@16.12.0)(monaco-editor@0.55.1)(next@15.4.11(@babel/core@7.29.0)(@playwright/test@1.56.1)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(sass@1.77.4))(payload@3.74.0(graphql@16.12.0)(typescript@5.7.2))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.7.2)':
     dependencies:
@@ -6146,8 +6050,6 @@ snapshots:
   '@rtsao/scc@1.1.0': {}
 
   '@rushstack/eslint-patch@1.15.0': {}
-
-  '@stripe/stripe-js@4.10.0': {}
 
   '@swc/helpers@0.5.15':
     dependencies:
@@ -6823,10 +6725,6 @@ snapshots:
       fsevents: 2.3.3
 
   ci-info@4.4.0: {}
-
-  class-variance-authority@0.7.1:
-    dependencies:
-      clsx: 2.1.1
 
   cli-cursor@5.0.0:
     dependencies:
@@ -8107,10 +8005,6 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-react@0.477.0(react@19.2.1):
-    dependencies:
-      react: 19.2.1
-
   lz-string@1.5.0: {}
 
   magic-string@0.30.21:
@@ -8428,8 +8322,6 @@ snapshots:
       - babel-plugin-macros
 
   node-releases@2.0.27: {}
-
-  nodemailer@7.0.12: {}
 
   normalize-path@3.0.0: {}
 
@@ -8788,10 +8680,6 @@ snapshots:
 
   qs-esm@7.0.3: {}
 
-  qs@6.14.1:
-    dependencies:
-      side-channel: 1.1.0
-
   queue-microtask@1.2.3: {}
 
   quick-format-unescaped@4.0.4: {}
@@ -8819,10 +8707,6 @@ snapshots:
   react-error-boundary@4.1.2(react@19.2.1):
     dependencies:
       '@babel/runtime': 7.28.6
-      react: 19.2.1
-
-  react-hook-form@7.54.1(react@19.2.1):
-    dependencies:
       react: 19.2.1
 
   react-image-crop@10.1.8(react@19.2.1):
@@ -9256,12 +9140,6 @@ snapshots:
     dependencies:
       js-tokens: 9.0.1
 
-  stripe@18.5.0(@types/node@22.5.4):
-    dependencies:
-      qs: 6.14.1
-    optionalDependencies:
-      '@types/node': 22.5.4
-
   strtok3@8.1.0:
     dependencies:
       '@tokenizer/token': 0.3.0
@@ -9285,8 +9163,6 @@ snapshots:
   symbol-tree@3.2.4: {}
 
   tabbable@6.4.0: {}
-
-  tailwind-merge@3.4.0: {}
 
   tailwindcss@4.1.18: {}
 

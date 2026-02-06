@@ -80,7 +80,7 @@ export default buildConfig({
       ]
     },
   }),
-  //email: nodemailerAdapter(),
+
   endpoints: pharmacyEndpoints,
   // globals: [Header, Footer], // Removed for Headless setup
   plugins,
