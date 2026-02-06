@@ -34,7 +34,7 @@ You are an expert Payload CMS developer. When working with Payload projects, fol
 3. **Type Generation**: Run `generate:types` script after schema changes
 4. **Transaction Safety**: Always pass `req` to nested operations in hooks
 5. **Access Control**: Understand Local API bypasses access control by default
-6. **Access Control**: Ensure roles exist when modifiyng collection or globals with access controls
+6. **Access Control**: Ensure `role` values exist when modifying collections/globals with access controls
 
 ### Code Validation
 
@@ -167,7 +167,7 @@ export const Posts: CollectionConfig = {
 }
 ```
 
-### Auth Collection with RBAC
+### Auth Collection (Admin/Customer)
 
 ```typescript
 export const Users: CollectionConfig = {
@@ -175,15 +175,14 @@ export const Users: CollectionConfig = {
   auth: true,
   fields: [
     {
-      name: 'roles',
+      name: 'role',
       type: 'select',
-      hasMany: true,
-      options: ['admin', 'editor', 'user'],
-      defaultValue: ['user'],
+      options: ['admin', 'customer'],
+      defaultValue: 'customer',
       required: true,
       saveToJWT: true, // Include in JWT for fast access checks
       access: {
-        update: ({ req: { user } }) => user?.roles?.includes('admin'),
+        update: ({ req: { user } }) => user?.role === 'admin',
       },
     },
   ],
@@ -333,12 +332,12 @@ import type { Access } from 'payload'
 const authenticated: Access = ({ req: { user } }) => Boolean(user)
 
 // Query constraint (row-level security)
-const ownPostsOnly: Access = ({ req: { user } }) => {
+const ownOrdersOnly: Access = ({ req: { user } }) => {
   if (!user) return false
-  if (user?.roles?.includes('admin')) return true
+  if (user?.role === 'admin') return true
 
   return {
-    author: { equals: user.id },
+    orderedBy: { equals: user.id },
   }
 }
 
@@ -347,7 +346,7 @@ const projectMemberAccess: Access = async ({ req, id }) => {
   const { user, payload } = req
 
   if (!user) return false
-  if (user.roles?.includes('admin')) return true
+  if (user.role === 'admin') return true
 
   const project = await payload.findByID({
     collection: 'projects',
@@ -371,11 +370,11 @@ const projectMemberAccess: Access = async ({ req, id }) => {
       // Self can read own salary
       if (user?.id === doc?.id) return true
       // Admin can read all
-      return user?.roles?.includes('admin')
+      return user?.role === 'admin'
     },
     update: ({ req: { user } }) => {
       // Only admins can update
-      return user?.roles?.includes('admin')
+      return user?.role === 'admin'
     },
   },
 }
@@ -392,12 +391,12 @@ export const authenticated: Access = ({ req: { user } }) => Boolean(user)
 
 // Admin only
 export const adminOnly: Access = ({ req: { user } }) => {
-  return user?.roles?.includes('admin')
+  return user?.role === 'admin'
 }
 
 // Admin or self
 export const adminOrSelf: Access = ({ req: { user } }) => {
-  if (user?.roles?.includes('admin')) return true
+  if (user?.role === 'admin') return true
   return { id: { equals: user?.id } }
 }
 
@@ -1075,7 +1074,7 @@ export const myPlugin =
 2. Field-level access only returns boolean (no query constraints)
 3. Default to restrictive access, gradually add permissions
 4. Never trust client-provided data
-5. Use `saveToJWT: true` for roles to avoid database lookups
+5. Use `saveToJWT: true` for `role` to avoid database lookups
 
 ### Performance
 
@@ -1220,6 +1219,24 @@ For deeper exploration of specific topics, refer to the context files located in
     - Using hooks
     - Performance best practices
     - Styling components
+
+14. **`code-style.md`** - Project coding standards
+
+    - TypeScript and validation workflow
+    - Security and transaction conventions
+    - Documentation expectations
+
+15. **`project-context.md`** - Project architecture context
+
+    - Headless CMS and React Native split
+    - Hybrid auth model (Payload admin, Supabase customer)
+    - Core business table overview
+
+16. **`supabase-integration.md`** - Supabase integration rules
+
+    - Postgres adapter and environment setup
+    - RLS scope and service-role behavior
+    - Live schema reference via Supabase MCP
 
 ## Resources
 
