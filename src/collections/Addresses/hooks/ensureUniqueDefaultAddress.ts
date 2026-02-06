@@ -16,20 +16,20 @@ export const ensureUniqueDefaultAddress: CollectionBeforeChangeHook = async ({
     return data
   }
 
-  // Only process if we have customer data and are setting as default
-  if (!data || !data.customer || !data.is_default) {
+  // Only process if we have user data and are setting as default
+  if (!data || !data.user || !data.is_default) {
     return data
   }
 
-  const customerId = typeof data.customer === 'object' ? data.customer.id : data.customer
+  const userId = typeof data.user === 'object' ? data.user.id : data.user
 
   try {
-    // Find existing default addresses for this customer
+    // Find existing default addresses for this user
     const existingDefaults = await req.payload.find({
       collection: 'addresses',
       where: {
         and: [
-          { customer: { equals: customerId } },
+          { user: { equals: userId } },
           { is_default: { equals: true } },
           ...(operation === 'update' && originalDoc?.id
             ? [{ id: { not_equals: originalDoc.id } }]

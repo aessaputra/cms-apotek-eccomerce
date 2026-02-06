@@ -1,6 +1,5 @@
 /**
  * Custom endpoints for pharmacy functionality
- * Requirements: 8.4, 8.5 - Custom endpoints for inventory reporting, stock monitoring, and prescription verification
  */
 
 // Export all endpoints as an array for easy import in payload config
@@ -27,7 +26,6 @@ import {
     inventoryStatusReport,
     inventoryStatusReportEndpoint,
     lowStockReport,
-    prescriptionTrackingReportEndpoint,
     salesReport,
 } from './inventory-reports'
 
@@ -61,7 +59,6 @@ export const pharmacyEndpoints = [
     // Advanced reporting endpoints
     salesReport,
     inventoryStatusReportEndpoint,
-    prescriptionTrackingReportEndpoint,
     financialReport,
 
     // Data integrity and health check endpoints
@@ -73,7 +70,6 @@ export const pharmacyEndpoints = [
     // They can be uncommented once the utility imports are resolved
     // The endpoint files are created and ready to use:
     // - stock-monitoring.ts (checkProductStock, checkBulkStock, stockMonitor, stockAlerts)  
-    // - prescription-verification.ts (pendingPrescriptionOrders, validatePrescription, verifyPrescription, removePrescriptionVerify, prescriptionStats)
 ]
 
 // Individual endpoint exports for direct use
@@ -84,7 +80,6 @@ export {
     inventoryStatusReport,
     inventoryStatusReportEndpoint,
     lowStockReport,
-    prescriptionTrackingReportEndpoint,
     salesReport
 } from './inventory-reports'
 

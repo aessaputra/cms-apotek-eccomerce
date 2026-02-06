@@ -10,8 +10,6 @@ import type { Access } from 'payload'
  * Audit logs are immutable and can only be created (via hooks) and read.
  * Updates and deletes are prevented at the collection level.
  * 
- * Requirements: 6.3, 7.3, 7.4 - Administrative authorization for audit operations
- * 
  * @returns true if user is an active admin, false otherwise
  */
 export const auditLogAccess: Access = ({ req }) => {
@@ -20,12 +18,6 @@ export const auditLogAccess: Access = ({ req }) => {
   // No user means no access to audit logs
   if (!user) {
     req.payload.logger.warn('Audit log access attempted without authentication')
-    return false
-  }
-
-  // Check if user account is active
-  if (user.is_active === false) {
-    req.payload.logger.warn(`Audit log access denied for inactive user ${user.id}`)
     return false
   }
 
@@ -54,8 +46,6 @@ export const auditLogAccess: Access = ({ req }) => {
 /**
  * Prevent any modifications to audit logs
  * Audit logs are immutable once created
- * 
- * Requirements: 6.4 - Audit log immutability
  */
 export const preventAuditLogModification: Access = () => {
   return false

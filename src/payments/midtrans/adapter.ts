@@ -94,11 +94,11 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
                 }
 
                 // Determine new status
-                let status: 'pending' | 'succeeded' | 'failed' = 'pending'
+                let status: 'pending' | 'settlement' | 'failure' = 'pending'
                 if (isSuccessfulTransaction(transaction_status)) {
-                    status = 'succeeded'
+                    status = 'settlement'
                 } else if (isFailedTransaction(transaction_status)) {
-                    status = 'failed'
+                    status = 'failure'
                 }
 
                 // Update transaction in database
@@ -309,7 +309,7 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
                         collection: (transactionsSlug || 'transactions') as 'transactions',
                         id: transactionId,
                         data: {
-                            status: 'succeeded',
+                            status: 'settlement',
                             midtrans_transaction_id: status.transaction_id,
                             midtrans_payment_type: status.payment_type,
                             midtrans_response: status as unknown as Record<string, unknown>,
@@ -321,25 +321,35 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
                 }
             }
 
+            const billing = transaction.billingAddress
+            const shippingName = billing ? `${billing.firstName || ''} ${billing.lastName || ''}`.trim() : 'Unknown'
+            const shippingAddress = billing ? `${billing.addressLine1 || ''} ${billing.city || ''} ${billing.postalCode || ''}`.trim() : 'Unknown'
+            const shippingPhone = billing?.phone || ''
+
+            const customerId = typeof transaction.customer === 'object' ? transaction.customer?.id : transaction.customer
+
             // Create the order
             const order = await req.payload.create({
                 collection: (ordersSlug || 'orders') as 'orders',
                 data: {
-                    customer: transaction.customer,
-                    items: transaction.items,
-                    amount: transaction.amount || 0,
-                    currency: transaction.currency,
-                    shippingAddress: transaction.billingAddress, // Fallback as Transaction has no shippingAddress
+                    orderedBy: customerId || '',
+                    items: transaction.items?.map(item => {
+                        const productId = typeof item.product === 'object' ? item.product?.id : item.product
+                        return {
+                            product: productId as string,
+                            price: 0,
+                            quantity: item.quantity,
+                        }
+                    }) || [],
+                    total: transaction.amount || 0,
+                    shipping_name: shippingName || 'Customer',
+                    shipping_address: shippingAddress || 'Address not provided',
+                    shipping_phone: shippingPhone || '0000000000',
                     status: 'processing',
-                    transactions: [Number(transactionId)],
                 },
             })
 
             // Clear the customer's cart if cart exists
-            const customerId = typeof transaction.customer === 'object'
-                ? (transaction.customer as { id: string | number })?.id
-                : transaction.customer
-
             if (customerId && cartsSlug) {
                 try {
                     const carts = await req.payload.find({
@@ -369,8 +379,8 @@ export function midtransAdapter(config: MidtransAdapterConfig): PaymentAdapter {
 
             return {
                 message: 'Order confirmed',
-                orderID: typeof order.id === 'string' ? parseInt(order.id) : order.id,
-                transactionID: (transactionId && !isNaN(Number(transactionId))) ? Number(transactionId) : 0
+                orderID: String(order.id),
+                transactionID: String(transactionId)
             }
         },
     }

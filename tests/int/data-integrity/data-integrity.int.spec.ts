@@ -49,20 +49,22 @@ describe('Data Integrity Integration Tests', () => {
     testUser = await payload.create({
       collection: 'users',
       data: {
-        name: 'Test Customer',
+        full_name: 'Test Customer',
         email: `test-customer-${Date.now()}@test.com`,
         password: 'password123',
-        roles: ['customer'],
+        role: 'customer',
+        phone: '081234567890',
       },
     })
 
     testAdmin = await payload.create({
       collection: 'users',
       data: {
-        name: 'Test Admin',
+        full_name: 'Test Admin',
         email: `test-admin-${Date.now()}@test.com`,
         password: 'password123',
-        roles: ['admin'],
+        role: 'admin',
+        phone: '081234567891',
       },
     })
 
@@ -70,7 +72,7 @@ describe('Data Integrity Integration Tests', () => {
     const testCategory = await payload.create({
       collection: 'categories',
       data: {
-        title: 'Test Category',
+        name: 'Test Category',
         slug: `test-category-${Date.now()}`,
       },
     })
@@ -81,14 +83,8 @@ describe('Data Integrity Integration Tests', () => {
       data: {
         title: 'Test Product',
         slug: `test-product-${Date.now()}`,
-        generic_name: 'Test Generic',
-        manufacturer: 'Test Manufacturer',
-        dosage_form: 'tablet',
-        strength: '500mg',
-        requires_prescription: false,
-        priceInUSDEnabled: true,
-        priceInUSD: 999,
-        categories: [testCategory.id],
+        price: 999,
+        category: testCategory.id,
         _status: 'published',
       },
     })
@@ -98,16 +94,8 @@ describe('Data Integrity Integration Tests', () => {
       collection: 'inventory',
       data: {
         product: testProduct.id,
-        batch_number: `TEST-${Date.now()}`,
-        expiry_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 year from now
-        manufacture_date: new Date().toISOString().split('T')[0],
-        supplier: 'Test Supplier',
-        initial_quantity: 100,
-        current_quantity: 100,
-        reserved_quantity: 0,
-        minimum_stock_level: 10,
-        unit_cost: 5.00,
-        is_active: true,
+        quantity: 100,
+        low_stock_threshold: 10,
       },
     })
 
@@ -115,7 +103,7 @@ describe('Data Integrity Integration Tests', () => {
     testAddress = await payload.create({
       collection: 'addresses',
       data: {
-        customer: testUser.id,
+        user: testUser.id,
         label: 'Test Address',
         recipient_name: 'Test User',
         phone: '+1234567890',
@@ -134,52 +122,18 @@ describe('Data Integrity Integration Tests', () => {
       expect(result.errors).toHaveLength(0)
     })
 
-    it('should detect negative current quantity', async () => {
+    it('should detect negative quantity', async () => {
       // Update inventory to have negative quantity
       await payload.update({
         collection: 'inventory',
         id: testInventory.id,
-        data: { current_quantity: -5 },
+        data: { quantity: -5 },
         context: { skipValidation: true },
       })
 
       const result = await validateInventoryQuantities(payload, testInventory.id)
       expect(result.valid).toBe(false)
-      expect(result.errors).toContain('Current quantity cannot be negative: -5')
-    })
-
-    it('should detect quantities exceeding initial quantity', async () => {
-      // Update inventory to exceed initial quantity
-      await payload.update({
-        collection: 'inventory',
-        id: testInventory.id,
-        data: {
-          current_quantity: 80,
-          reserved_quantity: 30, // Total: 110, Initial: 100
-        },
-        context: { skipValidation: true },
-      })
-
-      const result = await validateInventoryQuantities(payload, testInventory.id)
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('exceeds initial quantity'))).toBe(true)
-    })
-
-    it('should detect expired active inventory', async () => {
-      // Update inventory to be expired but still active
-      await payload.update({
-        collection: 'inventory',
-        id: testInventory.id,
-        data: {
-          expiry_date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Yesterday
-          is_active: true,
-        },
-        context: { skipValidation: true },
-      })
-
-      const result = await validateInventoryQuantities(payload, testInventory.id)
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('expired'))).toBe(true)
+      expect(result.errors.some(e => e.includes('negative'))).toBe(true)
     })
   })
 
@@ -187,32 +141,7 @@ describe('Data Integrity Integration Tests', () => {
     it('should calculate correct available stock', async () => {
       const result = await validateProductInventoryConsistency(payload, testProduct.id)
       expect(result.valid).toBe(true)
-      expect(result.calculatedStock).toBe(100) // current_quantity - reserved_quantity
-    })
-
-    it('should exclude expired inventory from calculations', async () => {
-      // Create expired inventory for the same product
-      await payload.create({
-        collection: 'inventory',
-        data: {
-          product: testProduct.id,
-          batch_number: `EXPIRED-${Date.now()}`,
-          expiry_date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Yesterday
-          manufacture_date: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          supplier: 'Test Supplier',
-          initial_quantity: 50,
-          current_quantity: 50,
-          reserved_quantity: 0,
-          minimum_stock_level: 10,
-          unit_cost: 5.00,
-          is_active: true,
-        },
-        context: { skipValidation: true },
-      })
-
-      const result = await validateProductInventoryConsistency(payload, testProduct.id)
-      expect(result.valid).toBe(true)
-      expect(result.calculatedStock).toBe(100) // Only non-expired inventory counted
+      expect(result.calculatedStock).toBe(100)
     })
   })
 
@@ -221,95 +150,23 @@ describe('Data Integrity Integration Tests', () => {
       const testOrder = await payload.create({
         collection: 'orders',
         data: {
-          customer: testUser.id,
-          shippingAddress: testAddress.id,
-          billingAddress: testAddress.id,
+          orderedBy: testUser.id,
+          shipping_name: 'Test',
+          shipping_address: 'Test Addr',
+          shipping_phone: '000',
           items: [{
             product: testProduct.id,
             quantity: 2,
             price: 999,
           }],
-          subtotal: 1998,
           total: 1998,
           status: 'pending',
-          prescription_required: false,
-          prescription_verified: false,
         },
       })
 
       const result = await validateOrderIntegrity(payload, testOrder.id)
       expect(result.valid).toBe(true)
       expect(result.errors).toHaveLength(0)
-    })
-
-    it('should detect prescription requirement mismatch', async () => {
-      // Create prescription product
-      const prescriptionProduct = await payload.create({
-        collection: 'products',
-        data: {
-          title: 'Prescription Product',
-          slug: `prescription-product-${Date.now()}`,
-          generic_name: 'Prescription Generic',
-          manufacturer: 'Test Manufacturer',
-          dosage_form: 'tablet',
-          strength: '500mg',
-          requires_prescription: true,
-          priceInUSDEnabled: true,
-          priceInUSD: 1999,
-          categories: [testProduct.categories[0]],
-          _status: 'published',
-        },
-      })
-
-      const testOrder = await payload.create({
-        collection: 'orders',
-        data: {
-          customer: testUser.id,
-          shippingAddress: testAddress.id,
-          billingAddress: testAddress.id,
-          items: [{
-            product: prescriptionProduct.id,
-            quantity: 1,
-            price: 1999,
-          }],
-          subtotal: 1999,
-          total: 1999,
-          status: 'pending',
-          prescription_required: false, // This should be true
-          prescription_verified: false,
-        },
-        context: { skipValidation: true },
-      })
-
-      const result = await validateOrderIntegrity(payload, testOrder.id)
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('prescription items but prescription_required is false'))).toBe(true)
-    })
-
-    it('should detect unverified prescription orders', async () => {
-      const testOrder = await payload.create({
-        collection: 'orders',
-        data: {
-          customer: testUser.id,
-          shippingAddress: testAddress.id,
-          billingAddress: testAddress.id,
-          items: [{
-            product: testProduct.id,
-            quantity: 1,
-            price: 999,
-          }],
-          subtotal: 999,
-          total: 999,
-          status: 'processing', // Non-pending status
-          prescription_required: true,
-          prescription_verified: false, // Should be verified for processing
-        },
-        context: { skipValidation: true },
-      })
-
-      const result = await validateOrderIntegrity(payload, testOrder.id)
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('must be verified before processing'))).toBe(true)
     })
   })
 
@@ -318,28 +175,6 @@ describe('Data Integrity Integration Tests', () => {
       const result = await validateAddressIntegrity(payload, testAddress.id)
       expect(result.valid).toBe(true)
       expect(result.errors).toHaveLength(0)
-    })
-
-    it('should detect duplicate default addresses', async () => {
-      // Create another default address for same user
-      const duplicateDefault = await payload.create({
-        collection: 'addresses',
-        data: {
-          customer: testUser.id,
-          label: 'Duplicate Default',
-          recipient_name: 'Test User',
-          phone: '+1234567890',
-          address_line: '456 Test Ave',
-          city: 'Test City',
-          postal_code: '12345',
-          is_default: true,
-        },
-        context: { skipValidation: true },
-      })
-
-      const result = await validateAddressIntegrity(payload, duplicateDefault.id)
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('Multiple default'))).toBe(true)
     })
 
     it('should validate addresses with missing required fields', async () => {
@@ -355,19 +190,17 @@ describe('Data Integrity Integration Tests', () => {
       const testOrder = await payload.create({
         collection: 'orders',
         data: {
-          customer: testUser.id,
-          shippingAddress: testAddress.id,
-          billingAddress: testAddress.id,
+          orderedBy: testUser.id,
+          shipping_name: 'Test',
+          shipping_address: 'Test Addr',
+          shipping_phone: '000',
           items: [{
             product: testProduct.id,
             quantity: 10,
             price: 999,
           }],
-          subtotal: 9990,
           total: 9990,
           status: 'pending',
-          prescription_required: false,
-          prescription_verified: false,
         },
       })
 
@@ -386,7 +219,7 @@ describe('Data Integrity Integration Tests', () => {
         collection: 'inventory',
         id: testInventory.id,
       })
-      expect(updatedInventory.current_quantity).toBe(90)
+      expect(updatedInventory.quantity).toBe(90)
     })
 
     it('should cancel order and restore stock atomically', async () => {
@@ -394,19 +227,17 @@ describe('Data Integrity Integration Tests', () => {
       const testOrder = await payload.create({
         collection: 'orders',
         data: {
-          customer: testUser.id,
-          shippingAddress: testAddress.id,
-          billingAddress: testAddress.id,
+          orderedBy: testUser.id,
+          shipping_name: 'Test',
+          shipping_address: 'Test Addr',
+          shipping_phone: '000',
           items: [{
             product: testProduct.id,
             quantity: 15,
             price: 999,
           }],
-          subtotal: 14985,
           total: 14985,
-          status: 'confirmed',
-          prescription_required: false,
-          prescription_verified: false,
+          status: 'pending',
         },
       })
 
@@ -422,7 +253,7 @@ describe('Data Integrity Integration Tests', () => {
         collection: 'inventory',
         id: testInventory.id,
       })
-      expect(inventory.current_quantity).toBe(85) // 100 - 15
+      expect(inventory.quantity).toBe(85) // 100 - 15
 
       // Cancel the order
       const result = await cancelOrderWithStockRestoration(
@@ -440,10 +271,10 @@ describe('Data Integrity Integration Tests', () => {
         collection: 'inventory',
         id: testInventory.id,
       })
-      expect(inventory.current_quantity).toBe(100) // Back to original
+      expect(inventory.quantity).toBe(100) // Back to original
     })
 
-    it('should adjust inventory with audit trail', async () => {
+    it('should adjust inventory with audit log (to logger)', async () => {
       const result = await adjustInventoryWithAudit(
         payload,
         { user: testAdmin, payload } as any,
@@ -456,10 +287,7 @@ describe('Data Integrity Integration Tests', () => {
       )
 
       expect(result.success).toBe(true)
-      expect(result.inventory?.current_quantity).toBe(95)
-      expect(result.movement).toBeDefined()
-      expect(result.movement?.movement_type).toBe('adjustment')
-      expect(result.movement?.quantity_change).toBe(-5)
+      expect(result.inventory?.quantity).toBe(95)
     })
 
     it('should prevent non-admin from adjusting inventory', async () => {
@@ -485,7 +313,6 @@ describe('Data Integrity Integration Tests', () => {
         checkProducts: true,
         checkOrders: true,
         checkAddresses: true,
-        checkMovements: true,
       })
 
       expect(result.valid).toBe(true)
@@ -497,41 +324,30 @@ describe('Data Integrity Integration Tests', () => {
       // Create data with multiple issues
 
       // 1. Negative inventory
-      const badInventory = await payload.create({
+      await payload.create({
         collection: 'inventory',
         data: {
           product: testProduct.id,
-          batch_number: `BAD-${Date.now()}`,
-          expiry_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          manufacture_date: new Date().toISOString().split('T')[0],
-          supplier: 'Test Supplier',
-          initial_quantity: 50,
-          current_quantity: -10, // Negative
-          reserved_quantity: 0,
-          minimum_stock_level: 10,
-          unit_cost: 5.00,
-          is_active: true,
+          quantity: -10, // Negative
         },
         context: { skipValidation: true },
       })
 
       // 2. Order without addresses
-      const badOrder = await payload.create({
+      await payload.create({
         collection: 'orders',
         data: {
-          customer: testUser.id,
-          // Missing addresses
+          orderedBy: testUser.id,
+          // Missing shipping_address
           items: [{
             product: testProduct.id,
             quantity: 1,
             price: 999,
           }],
-          subtotal: 999,
           total: 999,
           status: 'pending',
-          prescription_required: false,
-          prescription_verified: false,
         },
+        draft: true,
         context: { skipValidation: true },
       })
 
@@ -540,7 +356,6 @@ describe('Data Integrity Integration Tests', () => {
         checkProducts: true,
         checkOrders: true,
         checkAddresses: true,
-        checkMovements: true,
       })
 
       expect(result.valid).toBe(false)

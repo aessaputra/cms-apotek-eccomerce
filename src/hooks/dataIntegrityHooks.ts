@@ -71,43 +71,28 @@ export const validateAddressConstraints: CollectionBeforeChangeHook = async ({
   }
 
   try {
-    // Auto-assign customer if not admin
-    if (req.user?.role !== 'admin' && !data.customer) {
-      data.customer = req.user?.id
+    // Auto-assign user if not admin
+    if (req.user?.role !== 'admin' && !data.user) {
+      data.user = req.user?.id
     }
 
-    // Validate address type and default flags consistency
-    if (data.addressType) {
-      if (data.isDefaultShipping && data.addressType === 'billing') {
-        throw new Error('Billing-only address cannot be default shipping address')
-      }
-
-      if (data.isDefaultBilling && data.addressType === 'shipping') {
-        throw new Error('Shipping-only address cannot be default billing address')
-      }
-    }
-
-    // Ensure only one default address per type per customer
-    const customerId = data.customer ?? originalDoc?.customer
-    if (!customerId) {
-      // Allow creating address without customer only if it's being set in the same operation logic usually
-      // But schema says customer required? Let's check schema.
-      // Assuming customer is checking elsewhere or let it fail if required.
-      // But here we need customer ID for default check.
+    // Ensure only one default address per customer
+    const userId = data.user ?? originalDoc?.user
+    if (!userId) {
       if (operation === 'create' && req.user?.role !== 'admin') {
-        throw new Error('Customer is required for address')
+        throw new Error('User is required for address')
       }
     }
 
-    if (customerId) {
-      // Check default shipping constraint
-      if (data.isDefaultShipping === true) {
+    if (userId) {
+      // Check default constraint
+      if (data.is_default === true) {
         const existingDefault = await req.payload.find({
           collection: 'addresses',
           where: {
             and: [
-              { customer: { equals: customerId } },
-              { isDefaultShipping: { equals: true } },
+              { user: { equals: userId } },
+              { is_default: { equals: true } },
               ...(operation === 'update' && originalDoc ? [{ id: { not_equals: originalDoc.id } }] : []),
             ],
           },
@@ -119,33 +104,7 @@ export const validateAddressConstraints: CollectionBeforeChangeHook = async ({
           await req.payload.update({
             collection: 'addresses',
             id: existingDefault.docs[0].id,
-            data: { isDefaultShipping: false },
-            req,
-            context: { skipValidation: true },
-          })
-        }
-      }
-
-      // Check default billing constraint
-      if (data.isDefaultBilling === true) {
-        const existingDefault = await req.payload.find({
-          collection: 'addresses',
-          where: {
-            and: [
-              { customer: { equals: customerId } },
-              { isDefaultBilling: { equals: true } },
-              ...(operation === 'update' && originalDoc ? [{ id: { not_equals: originalDoc.id } }] : []),
-            ],
-          },
-          limit: 1,
-        })
-
-        if (existingDefault.docs.length > 0) {
-          // Unset the existing default
-          await req.payload.update({
-            collection: 'addresses',
-            id: existingDefault.docs[0].id,
-            data: { isDefaultBilling: false },
+            data: { is_default: false },
             req,
             context: { skipValidation: true },
           })
@@ -161,7 +120,7 @@ export const validateAddressConstraints: CollectionBeforeChangeHook = async ({
 }
 
 /**
- * Validates order data integrity and prescription requirements
+ * Validates order data integrity
  */
 export const validateOrderIntegrity: CollectionBeforeChangeHook = async ({
   data,
@@ -175,61 +134,15 @@ export const validateOrderIntegrity: CollectionBeforeChangeHook = async ({
   }
 
   try {
-    // Auto-assign customer if not admin
-    if (req.user?.role !== 'admin' && !data.customer) {
-      data.customer = req.user?.id
-    }
-
-    // Validate prescription requirements
-    if (data.items && Array.isArray(data.items)) {
-      let requiresPrescription = false
-
-      for (const item of data.items) {
-        if (item.product) {
-          const product = await req.payload.findByID({
-            collection: 'products',
-            id: typeof item.product === 'object' ? item.product.id : item.product,
-            depth: 0,
-          })
-
-          if (product?.requires_prescription) {
-            requiresPrescription = true
-            break
-          }
-        }
-      }
-
-      // Set prescription_required based on items
-      if (requiresPrescription && data.prescription_required !== true) {
-        data.prescription_required = true
-      }
-
-      // Validate prescription verification for non-pending orders
-      if (
-        data.prescription_required &&
-        data.status &&
-        data.status !== 'pending' &&
-        data.status !== 'cancelled' &&
-        !data.prescription_verified
-      ) {
-        throw new Error('Prescription orders must be verified before processing')
-      }
-
-      // Validate verified_by when prescription_verified is true
-      if (data.prescription_verified && !data.verified_by) {
-        throw new Error('Prescription verification requires verified_by user')
-      }
+    // Auto-assign user if not admin
+    if (req.user?.role !== 'admin' && !data.orderedBy) {
+      data.orderedBy = req.user?.id
     }
 
     // Validate required addresses
     if (operation === 'create') {
-      if (!data.shippingAddress) {
+      if (!data.shipping_address) {
         throw new Error('Shipping address is required')
-      }
-
-      if (!data.billingAddress) {
-        // Use shipping address as billing if not provided
-        data.billingAddress = data.shippingAddress
       }
     }
 
@@ -275,35 +188,6 @@ export const validateProductIntegrity: CollectionBeforeChangeHook = async ({
   }
 
   try {
-    // Validate pharmacy-specific fields
-    if (data.requires_prescription === true) {
-      // Prescription products should have certain fields
-      if (!data.generic_name) {
-        throw new Error('Generic name is required for prescription products')
-      }
-
-      if (!data.manufacturer) {
-        throw new Error('Manufacturer is required for prescription products')
-      }
-
-      if (!data.strength) {
-        throw new Error('Strength is required for prescription products')
-      }
-    }
-
-    // Validate dosage form if provided
-    if (data.dosage_form) {
-      const validForms = [
-        'tablet', 'capsule', 'syrup', 'liquid', 'cream', 'ointment',
-        'gel', 'injection', 'drops', 'spray', 'patch', 'powder',
-        'suppository', 'inhaler', 'other'
-      ]
-
-      if (!validForms.includes(data.dosage_form)) {
-        throw new Error(`Invalid dosage form: ${data.dosage_form}`)
-      }
-    }
-
     // Validate price
     if (data.priceInUSD !== undefined && data.priceInUSD < 0) {
       throw new Error('Price cannot be negative')

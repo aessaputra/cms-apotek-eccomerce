@@ -3,7 +3,6 @@ import { checkBulkStockAvailability } from './stockAvailability'
 
 /**
  * Order processing utilities
- * Requirements: 5.1, 8.1 - Order processing utilities
  */
 
 export interface OrderValidationResult {
@@ -29,7 +28,7 @@ export interface OrderProcessingResult {
 
 /**
  * Validate an order before processing
- * Checks stock availability, prescription requirements, and address validation
+ * Checks stock availability and address validation
  */
 export async function validateOrder(
   payload: Payload,
@@ -108,13 +107,8 @@ export async function validateOrder(
     }
 
     // Validate addresses
-    if (!order.shippingAddress) {
+    if (!order.shipping_address) {
       errors.push('Shipping address is required')
-    }
-
-    // Validate prescription requirements
-    if (order.prescription_required && !order.prescription_verified) {
-      errors.push('Prescription verification is required for this order')
     }
 
     // Validate order status
@@ -123,7 +117,7 @@ export async function validateOrder(
     }
 
     // Validate totals
-    if (!order.amount || order.amount <= 0) {
+    if (!order.total || order.total <= 0) {
       errors.push('Order total must be greater than zero')
     }
 

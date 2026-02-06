@@ -7,8 +7,6 @@ import type { Access } from 'payload'
  * This access control function ensures that only users with the 'admin' role
  * can perform operations on sensitive collections like inventory and audit logs.
  * 
- * Requirements: 7.3, 7.4, 6.3 - Administrative access for inventory and audit operations
- * 
  * @returns true if user has admin role, false otherwise
  */
 export const adminOnlyWithRoleValidation: Access = ({ req }) => {

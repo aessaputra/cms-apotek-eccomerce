@@ -209,8 +209,8 @@ export async function cancelOrderWithStockRestoration(
       throw new TransactionError('Order is already cancelled')
     }
 
-    if (order.status === 'completed') {
-      throw new TransactionError('Cannot cancel completed orders')
+    if (order.status === 'delivered') {
+      throw new TransactionError('Cannot cancel delivered orders')
     }
 
     const stockRestorations: Array<{ inventoryId: string | number; quantity: number }> = []
@@ -403,10 +403,6 @@ export async function validateComplexOperation(
           warnings.push(`Order status is ${order.status}, expected null or processing`)
         }
 
-        if (order.prescription_required && !order.prescription_verified) {
-          errors.push('Prescription verification required before processing')
-        }
-
         // Check stock availability
         if (order.items) {
           for (const item of order.items) {
@@ -454,8 +450,8 @@ export async function validateComplexOperation(
           break
         }
 
-        if (cancelOrder.status === 'completed') {
-          errors.push('Cannot cancel completed orders')
+        if (cancelOrder.status === 'delivered') {
+          errors.push('Cannot cancel delivered orders')
         }
 
         if (cancelOrder.status === 'cancelled') {

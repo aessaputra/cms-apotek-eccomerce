@@ -5,7 +5,6 @@ import { APIError } from 'payload'
 
 /**
  * Stock level monitoring endpoints
- * Requirements: 8.4, 8.5 - Stock level monitoring endpoints
  */
 
 /**
@@ -75,7 +74,6 @@ export const checkProductStock: Endpoint = {
             productId,
             isAvailable: availability.isAvailable,
             message: availability.message,
-            requiresPrescription: availability.requiresPrescription,
           },
         })
       }

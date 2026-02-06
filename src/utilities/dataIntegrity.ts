@@ -92,7 +92,7 @@ export async function validateProductInventoryConsistency(
 
 /**
  * Validates order data integrity
- * Ensures order totals, item quantities, and prescription requirements are correct
+ * Ensures order totals, item quantities, and address validation are correct
  */
 export async function validateOrderIntegrity(
   payload: Payload,
@@ -117,47 +117,14 @@ export async function validateOrderIntegrity(
       errors.push('Order must have at least one item')
     }
 
-    // Validate prescription requirements
-    let requiresPrescription = false
-    if (order.items) {
-      for (const item of order.items) {
-        if (typeof item.product === 'object' && item.product && item.product.requires_prescription) {
-          requiresPrescription = true
-          break
-        }
-      }
-    }
-
-    if (requiresPrescription && !order.prescription_required) {
-      errors.push('Order contains prescription items but prescription_required is false')
-    }
-
-    if (order.prescription_required && !requiresPrescription) {
-      errors.push('Order marked as requiring prescription but contains no prescription items')
-    }
-
-    // Validate prescription verification for processing orders
-    if (
-      order.prescription_required &&
-      order.status === 'processing' &&
-      !order.prescription_verified
-    ) {
-      errors.push('Prescription order must be verified before processing')
-    }
-
-    // Validate verified_by is set when prescription_verified is true
-    if (order.prescription_verified && !order.verified_by) {
-      errors.push('Prescription verification requires verified_by user')
-    }
-
     // Validate addresses exist
-    if (!order.shippingAddress) {
+    if (!order.shipping_address) {
       errors.push('Order must have a shipping address')
     }
 
-    // Validate customer exists
-    if (!order.customer) {
-      errors.push('Order must have a customer')
+    // Validate user exists
+    if (!order.orderedBy) {
+      errors.push('Order must have a user (orderedBy)')
     }
 
     return { valid: errors.length === 0, errors }
@@ -189,31 +156,13 @@ export async function validateAddressIntegrity(
     }
 
     // Validate required fields
-    if (!address.customer) errors.push('Address missing required field: customer')
+    if (!address.user) errors.push('Address missing required field: user')
     if (!address.label) errors.push('Address missing required field: label')
-    if (!address.firstName) errors.push('Address missing required field: firstName')
-    if (!address.lastName) errors.push('Address missing required field: lastName')
+    if (!address.recipient_name) errors.push('Address missing required field: recipient_name')
     if (!address.phone) errors.push('Address missing required field: phone')
-    if (!address.addressLine1) errors.push('Address missing required field: addressLine1')
+    if (!address.address_line) errors.push('Address missing required field: address_line')
     if (!address.city) errors.push('Address missing required field: city')
-    if (!address.state) errors.push('Address missing required field: state')
-    if (!address.postalCode) errors.push('Address missing required field: postalCode')
-    if (!address.country) errors.push('Address missing required field: country')
-    if (!address.addressType) errors.push('Address missing required field: addressType')
-
-    // Validate address type
-    if (!['shipping', 'billing', 'both'].includes(address.addressType)) {
-      errors.push(`Invalid address type: ${address.addressType}`)
-    }
-
-    // Validate default flags match address type
-    if (address.isDefaultShipping && address.addressType === 'billing') {
-      errors.push('Billing-only address cannot be default shipping address')
-    }
-
-    if (address.isDefaultBilling && address.addressType === 'shipping') {
-      errors.push('Shipping-only address cannot be default billing address')
-    }
+    if (!address.postal_code) errors.push('Address missing required field: postal_code')
 
     return { valid: errors.length === 0, errors }
   } catch (error) {

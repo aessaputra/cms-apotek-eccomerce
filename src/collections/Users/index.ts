@@ -38,11 +38,11 @@ export const Users: CollectionConfig = {
       type: 'text',
       required: true,
       admin: {
-        description: 'Primary phone number for prescription verification and order notifications',
+        description: 'Primary phone number for order notifications',
       },
       validate: (value: string | null | undefined) => {
         if (!value) {
-          return 'Phone number is required for prescription verification'
+          return 'Phone number is required'
         }
         if (!/^\+?[\d\s\-\(\)]+$/.test(value)) {
           return 'Please enter a valid phone number'

@@ -1,12 +1,11 @@
 import { getPharmacySystemStatus } from '@/utilities/pharmacy'
-import { generateFinancialReport, generateInventoryStatusReport, generatePrescriptionTrackingReport, generateSalesReport } from '@/utilities/reportingUtilities'
+import { generateFinancialReport, generateInventoryStatusReport, generateSalesReport } from '@/utilities/reportingUtilities'
 import { getLowStockProducts } from '@/utilities/stockAvailability'
 import type { Endpoint } from 'payload'
 import { APIError } from 'payload'
 
 /**
  * Inventory reporting endpoints
- * Requirements: 8.4, 8.5 - Inventory reporting endpoints
  */
 
 /**
@@ -287,63 +286,6 @@ export const inventoryStatusReportEndpoint: Endpoint = {
       })
     } catch (error) {
       req.payload.logger.error('Inventory status report endpoint error: ' + error)
-
-      if (error instanceof APIError) {
-        return Response.json(
-          { success: false, error: error.message },
-          { status: error.status }
-        )
-      }
-
-      return Response.json(
-        { success: false, error: 'Internal server error' },
-        { status: 500 }
-      )
-    }
-  },
-}
-
-/**
- * Get prescription tracking report
- * GET /api/reports/prescription-tracking
- */
-export const prescriptionTrackingReportEndpoint: Endpoint = {
-  path: '/reports/prescription-tracking',
-  method: 'get',
-  handler: async (req) => {
-    try {
-      // Check authentication and admin role
-      if (!req.user) {
-        throw new APIError('Authentication required', 401)
-      }
-
-      if (req.user.role !== 'admin') {
-        throw new APIError('Admin access required', 403)
-      }
-
-      // Parse query parameters
-      const startDate = req.query.startDate as string
-      const endDate = req.query.endDate as string
-
-      if (!startDate || !endDate) {
-        throw new APIError('Start date and end date are required', 400)
-      }
-
-      // Generate prescription tracking report
-      const report = await generatePrescriptionTrackingReport(req.payload, {
-        startDate,
-        endDate,
-      })
-
-      return Response.json({
-        success: true,
-        data: report,
-        meta: {
-          generatedAt: new Date().toISOString(),
-        },
-      })
-    } catch (error) {
-      req.payload.logger.error('Prescription tracking report error: ' + error)
 
       if (error instanceof APIError) {
         return Response.json(

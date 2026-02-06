@@ -5,9 +5,6 @@ import { generateCacheKey, stockCaching } from './caching'
 /**
  * Core stock availability checking utilities with caching
  * Simplified for MVP - uses quantity and low_stock_threshold only
- * 
- * Requirements: 4.5 - Stock availability checking utilities
- * Requirements: 8.3 - Caching for stock availability calculations
  */
 
 export interface StockAvailabilityResult {

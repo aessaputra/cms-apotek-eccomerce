@@ -1,6 +1,7 @@
 import config from '@payload-config'
 import type { Payload } from 'payload'
 import { getPayload } from 'payload'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 /**
  * Integration tests for user data access control
@@ -25,15 +26,23 @@ describe('User Data Access Control', () => {
   beforeAll(async () => {
     payload = await getPayload({ config })
 
+    // Create a category
+    const category = await payload.create({
+      collection: 'categories',
+      data: {
+        name: 'Test Category',
+      },
+    })
+
     // Create admin user
     adminUser = await payload.create({
       collection: 'users',
       data: {
         email: 'admin-access-test@example.com',
         password: 'test123456',
-        name: 'Admin User',
+        full_name: 'Admin User',
         phone: '+1234567890',
-        roles: ['admin'],
+        role: 'admin',
       },
     })
 
@@ -43,9 +52,9 @@ describe('User Data Access Control', () => {
       data: {
         email: 'customer1-access-test@example.com',
         password: 'test123456',
-        name: 'Customer One',
+        full_name: 'Customer One',
         phone: '+1234567891',
-        roles: ['customer'],
+        role: 'customer',
       },
     })
 
@@ -54,9 +63,9 @@ describe('User Data Access Control', () => {
       data: {
         email: 'customer2-access-test@example.com',
         password: 'test123456',
-        name: 'Customer Two',
+        full_name: 'Customer Two',
         phone: '+1234567892',
-        roles: ['customer'],
+        role: 'customer',
       },
     })
 
@@ -64,7 +73,7 @@ describe('User Data Access Control', () => {
     customer1Address = await payload.create({
       collection: 'addresses',
       data: {
-        customer: customerUser1.id,
+        user: customerUser1.id,
         label: 'Home',
         recipient_name: 'Customer One',
         phone: '+1234567891',
@@ -77,7 +86,7 @@ describe('User Data Access Control', () => {
     customer2Address = await payload.create({
       collection: 'addresses',
       data: {
-        customer: customerUser2.id,
+        user: customerUser2.id,
         label: 'Home',
         recipient_name: 'Customer Two',
         phone: '+1234567892',
@@ -117,7 +126,7 @@ describe('User Data Access Control', () => {
 
       expect(result.docs).toHaveLength(1)
       expect(result.docs[0].id).toBe(customer1Address.id)
-      expect(result.docs[0].customer).toBe(customerUser1.id)
+      expect(result.docs[0].user).toBe(customerUser1.id)
     })
 
     it('should prevent customers from reading other customers\' addresses', async () => {
@@ -182,6 +191,14 @@ describe('User Data Access Control', () => {
     let customer2Order: any
 
     beforeAll(async () => {
+      // Create a category
+      const category = await payload.create({
+        collection: 'categories',
+        data: {
+          name: 'Order Test Category',
+        },
+      })
+
       // Create test products
       const product = await payload.create({
         collection: 'products',
@@ -189,7 +206,8 @@ describe('User Data Access Control', () => {
           title: 'Test Product for Orders',
           slug: 'test-product-orders-access',
           _status: 'published',
-          stripeProductID: 'test-stripe-product-orders',
+          category: category.id,
+          price: 100,
         },
       })
 
@@ -197,7 +215,7 @@ describe('User Data Access Control', () => {
       customer1Order = await payload.create({
         collection: 'orders',
         data: {
-          customer: customerUser1.id,
+          orderedBy: customerUser1.id,
           items: [
             {
               product: product.id,
@@ -206,6 +224,9 @@ describe('User Data Access Control', () => {
             },
           ],
           total: 100,
+          shipping_name: 'Test',
+          shipping_address: 'Test Addr',
+          shipping_phone: '000',
           status: 'pending',
         },
       })
@@ -213,7 +234,7 @@ describe('User Data Access Control', () => {
       customer2Order = await payload.create({
         collection: 'orders',
         data: {
-          customer: customerUser2.id,
+          orderedBy: customerUser2.id,
           items: [
             {
               product: product.id,
@@ -222,6 +243,9 @@ describe('User Data Access Control', () => {
             },
           ],
           total: 100,
+          shipping_name: 'Test',
+          shipping_address: 'Test Addr',
+          shipping_phone: '000',
           status: 'pending',
         },
       })
@@ -243,10 +267,10 @@ describe('User Data Access Control', () => {
         overrideAccess: false,
       })
 
-      const customer1Orders = result.docs.filter((doc: any) => doc.customer === customerUser1.id)
+      const customer1Orders = result.docs.filter((doc: any) => doc.orderedBy === customerUser1.id || doc.orderedBy?.id === customerUser1.id)
       expect(customer1Orders.length).toBeGreaterThanOrEqual(1)
 
-      const hasOtherCustomerOrders = result.docs.some((doc: any) => doc.customer === customerUser2.id)
+      const hasOtherCustomerOrders = result.docs.some((doc: any) => doc.orderedBy === customerUser2.id || doc.orderedBy?.id === customerUser2.id)
       expect(hasOtherCustomerOrders).toBe(false)
     })
 
@@ -284,6 +308,14 @@ describe('User Data Access Control', () => {
     let customer2Cart: any
 
     beforeAll(async () => {
+      // Create a category
+      const category = await payload.create({
+        collection: 'categories',
+        data: {
+          name: 'Cart Test Category',
+        },
+      })
+
       // Create test products
       const product = await payload.create({
         collection: 'products',
@@ -291,7 +323,8 @@ describe('User Data Access Control', () => {
           title: 'Test Product for Carts',
           slug: 'test-product-carts-access',
           _status: 'published',
-          stripeProductID: 'test-stripe-product-carts',
+          category: category.id,
+          price: 50,
         },
       })
 
@@ -303,7 +336,6 @@ describe('User Data Access Control', () => {
           items: [
             {
               product: product.id,
-              price: 50,
               quantity: 2,
             },
           ],
@@ -317,7 +349,6 @@ describe('User Data Access Control', () => {
           items: [
             {
               product: product.id,
-              price: 50,
               quantity: 1,
             },
           ],

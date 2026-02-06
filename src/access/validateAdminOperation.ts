@@ -8,8 +8,6 @@ import type { PayloadRequest } from 'payload'
  * has the necessary permissions to perform administrative operations
  * across the pharmacy system.
  * 
- * Requirements: 6.3, 7.3, 7.4 - Administrative authorization validation
- * 
  * @param req - Payload request object
  * @param operation - Description of the operation being performed
  * @returns true if user is authorized, throws error otherwise
@@ -21,12 +19,6 @@ export const validateAdminOperation = (req: PayloadRequest, operation: string): 
   if (!user) {
     payload.logger.warn(`Administrative operation '${operation}' attempted without authentication`)
     throw new Error('Authentication required for administrative operations')
-  }
-
-  // Check if user account is active
-  if (user.is_active === false) {
-    payload.logger.warn(`Administrative operation '${operation}' denied for inactive user ${user.id}`)
-    throw new Error('Account is inactive')
   }
 
   // Validate role structure
@@ -54,8 +46,6 @@ export const validateAdminOperation = (req: PayloadRequest, operation: string): 
  * 
  * This function adds additional validation specific to inventory operations
  * such as stock adjustments and batch management.
- * 
- * Requirements: 7.3, 7.4 - Inventory administrative access
  * 
  * @param req - Payload request object
  * @param operation - Description of the inventory operation
@@ -85,8 +75,6 @@ export const validateInventoryOperation = (
  * 
  * This function provides validation for audit log access with enhanced
  * security logging for compliance purposes.
- * 
- * Requirements: 6.3, 7.4 - Audit log administrative access
  * 
  * @param req - Payload request object
  * @param operation - Description of the audit operation

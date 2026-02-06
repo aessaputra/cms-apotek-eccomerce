@@ -7,8 +7,6 @@ import type { Access } from 'payload'
  * This access control function provides enhanced security for inventory management
  * by ensuring only active admin users can access inventory data and operations.
  * 
- * Requirements: 7.3, 7.4 - Administrative access for inventory collection
- * 
  * @returns true if user is an active admin, false otherwise
  */
 export const inventoryAdminAccess: Access = ({ req }) => {
@@ -17,12 +15,6 @@ export const inventoryAdminAccess: Access = ({ req }) => {
   // No user means no access
   if (!user) {
     req.payload.logger.warn('Inventory access attempted without authentication')
-    return false
-  }
-
-  // Check if user account is active
-  if (user.is_active === false) {
-    req.payload.logger.warn(`Inventory access denied for inactive user ${user.id}`)
     return false
   }
 

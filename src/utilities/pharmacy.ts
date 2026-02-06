@@ -1,7 +1,6 @@
 /**
  * Pharmacy-specific utility functions
  * Centralized exports for all pharmacy business logic utilities
- * Requirements: 4.5, 5.1, 8.1 - Core business logic functions
  */
 
 // Stock availability utilities
@@ -14,13 +13,6 @@ export {
   cancelOrder,
   getOrderProcessingStatus, processOrderConfirmation, validateOrder, type OrderProcessingResult, type OrderValidationResult
 } from './orderProcessing'
-
-// Prescription validation utilities
-export {
-  getOrdersRequiringPrescriptionVerification, removePrescriptionVerification, validateOrderPrescription,
-  verifyOrderPrescription, type PrescriptionValidationResult,
-  type PrescriptionVerificationResult
-} from './prescriptionValidation'
 
 // Stock management utilities
 export {
@@ -38,11 +30,9 @@ export {
 export {
   generateFinancialReport,
   generateInventoryStatusReport,
-  generatePrescriptionTrackingReport,
   generateSalesReport,
   type FinancialReport,
   type InventoryStatusReport,
-  type PrescriptionTrackingReport,
   type SalesReport
 } from './reportingUtilities'
 
@@ -65,7 +55,6 @@ export async function getPharmacySystemStatus(payload: Payload): Promise<{
   }
   orderStatus: {
     pendingOrders: number
-    awaitingPrescriptionVerification: number
     processingOrders: number
   }
   systemHealth: 'healthy' | 'warning' | 'critical'
@@ -77,7 +66,6 @@ export async function getPharmacySystemStatus(payload: Payload): Promise<{
       totalProductsResult,
       lowStockResult,
       pendingOrdersResult,
-      prescriptionOrdersResult,
       processingOrdersResult,
     ] = await Promise.all([
       // Total active products
@@ -91,15 +79,6 @@ export async function getPharmacySystemStatus(payload: Payload): Promise<{
       payload.find({
         collection: 'inventory',
         where: {
-          // We'll filter strictly by threshold in code if needed, 
-          // but for count we can just get all active ones and filter
-          // or we could assume we just want to count them.
-          // Simplified: Fetch all and count low stock in code for accuracy
-          // as simple querying might be tricky with field comparison (quantity <= threshold) in some DBs/adapters.
-          // But simplified schema has low_stock_threshold.
-          // Let's just fetch all inventory for active products ideally. 
-          // Since we don't have is_active on inventory anymore (it's on product),
-          // we rely on product relationship.
         },
         limit: 5000,
       }),
@@ -108,18 +87,6 @@ export async function getPharmacySystemStatus(payload: Payload): Promise<{
       payload.find({
         collection: 'orders',
         where: { status: { equals: 'pending' } },
-        limit: 1,
-      }),
-
-      // Orders awaiting prescription verification
-      payload.find({
-        collection: 'orders',
-        where: {
-          and: [
-            { prescription_required: { equals: true } },
-            { prescription_verified: { not_equals: true } },
-          ],
-        },
         limit: 1,
       }),
 
@@ -149,7 +116,6 @@ export async function getPharmacySystemStatus(payload: Payload): Promise<{
 
     const orderStatus = {
       pendingOrders: pendingOrdersResult.totalDocs,
-      awaitingPrescriptionVerification: prescriptionOrdersResult.totalDocs,
       processingOrders: processingOrdersResult.totalDocs,
     }
 
@@ -157,9 +123,7 @@ export async function getPharmacySystemStatus(payload: Payload): Promise<{
     let systemHealth: 'healthy' | 'warning' | 'critical' = 'healthy'
 
     // Adjusted thresholds
-    if (orderStatus.awaitingPrescriptionVerification > 20) {
-      systemHealth = 'critical'
-    } else if (stockStatus.lowStockProducts > 10 || orderStatus.pendingOrders > 10) {
+    if (stockStatus.lowStockProducts > 10 || orderStatus.pendingOrders > 10) {
       systemHealth = 'warning'
     }
 
@@ -182,7 +146,6 @@ export async function getPharmacySystemStatus(payload: Payload): Promise<{
       },
       orderStatus: {
         pendingOrders: 0,
-        awaitingPrescriptionVerification: 0,
         processingOrders: 0,
       },
       systemHealth: 'critical',
@@ -203,8 +166,6 @@ export async function validateProductAvailability(
   isAvailable: boolean
   availableQuantity: number
   message: string
-  requiresPrescription: boolean
-  prescriptionVerified?: boolean
 }> {
   try {
     // Check stock availability
@@ -222,7 +183,6 @@ export async function validateProductAvailability(
         isAvailable: false,
         availableQuantity: 0,
         message: product ? 'Product is not available' : 'Product not found',
-        requiresPrescription: product?.requires_prescription || false,
       }
     }
 
@@ -239,7 +199,6 @@ export async function validateProductAvailability(
       isAvailable: stockResult.isAvailable,
       availableQuantity: stockResult.quantity,
       message,
-      requiresPrescription: product.requires_prescription || false,
     }
   } catch (error) {
     payload.logger.error(
@@ -250,7 +209,6 @@ export async function validateProductAvailability(
       isAvailable: false,
       availableQuantity: 0,
       message: 'Unable to check availability',
-      requiresPrescription: false,
     }
   }
 }

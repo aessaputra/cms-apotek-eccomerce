@@ -16,7 +16,6 @@ export interface LowStockProduct {
   deficit: number
   deficitPercentage: number
   estimatedValue: number
-  requiresPrescription: boolean
   lastRestocked?: string
 }
 
@@ -60,7 +59,6 @@ export async function getLowStockProducts(
   options: {
     limit?: number
     categoryId?: string | number
-    requiresPrescription?: boolean
     sortBy?: 'deficit' | 'percentage' | 'value'
     sortOrder?: 'asc' | 'desc'
     minDeficit?: number
@@ -126,8 +124,7 @@ export async function getLowStockProducts(
           deficit,
           deficitPercentage,
           estimatedValue,
-          requiresPrescription: false, // Defaulting to false as field usage was removed
-          lastRestocked: inventory.updatedAt,
+          lastRestocked: inventory.updated_at,
         } as LowStockProduct
       })
       .filter((item): item is LowStockProduct => item !== null)
