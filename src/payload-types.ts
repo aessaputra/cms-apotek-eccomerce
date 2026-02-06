@@ -176,7 +176,7 @@ export interface User {
   id: string;
   full_name?: string | null;
   /**
-   * Primary phone number for prescription verification and order notifications
+   * Primary phone number for order notifications
    */
   phone: string;
   role?: ('admin' | 'customer') | null;
