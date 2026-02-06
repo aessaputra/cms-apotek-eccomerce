@@ -7,7 +7,6 @@ import { publicAccess } from '@/access/publicAccess'
 import { checkRole } from '@/access/utilities'
 
 import { ensureFirstUserIsAdmin } from './hooks/ensureFirstUserIsAdmin'
-import { preventInactiveLogin } from './hooks/preventInactiveLogin'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -27,9 +26,7 @@ export const Users: CollectionConfig = {
   auth: {
     tokenExpiration: 1209600,
   },
-  hooks: {
-    beforeLogin: [preventInactiveLogin],
-  },
+  // Note: is_active field removed to match DB schema (profiles table has no is_active column)
   fields: [
     {
       name: 'full_name', // Matches schema 'full_name'
@@ -111,20 +108,6 @@ export const Users: CollectionConfig = {
       admin: {
         allowCreate: false,
         defaultColumns: ['id'],
-      },
-    },
-    {
-      name: 'is_active',
-      type: 'checkbox',
-      defaultValue: true,
-      access: {
-        create: adminOnlyFieldAccess,
-        read: adminOnlyFieldAccess,
-        update: adminOnlyFieldAccess,
-      },
-      admin: {
-        description: 'Controls whether the user account is active. Inactive users cannot log in.',
-        position: 'sidebar',
       },
     },
   ],

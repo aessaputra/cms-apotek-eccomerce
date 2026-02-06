@@ -24,8 +24,12 @@ const replaceFields = (fields: Field[]): Field[] => {
                 type: 'select',
                 options: [
                     { label: 'Pending', value: 'pending' },
-                    { label: 'Succeeded', value: 'succeeded' },
-                    { label: 'Failed', value: 'failed' },
+                    { label: 'Settlement', value: 'settlement' },
+                    { label: 'Capture', value: 'capture' },
+                    { label: 'Deny', value: 'deny' },
+                    { label: 'Cancel', value: 'cancel' },
+                    { label: 'Expire', value: 'expire' },
+                    { label: 'Failure', value: 'failure' },
                 ],
                 dbName: 'status',
             }
@@ -82,6 +86,22 @@ export const TransactionsCollection: CollectionOverride = ({ defaultCollection }
             name: 'midtrans_payment_type',
             type: 'text',
             admin: { readOnly: true },
+        },
+        {
+            name: 'paid_at',
+            type: 'date',
+            admin: {
+                date: { pickerAppearance: 'dayAndTime' },
+                readOnly: true,
+            },
+        },
+        {
+            name: 'expired_at',
+            type: 'date',
+            admin: {
+                date: { pickerAppearance: 'dayAndTime' },
+                readOnly: true,
+            },
         },
         {
             name: 'midtrans_response',

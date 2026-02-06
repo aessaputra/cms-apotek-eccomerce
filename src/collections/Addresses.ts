@@ -6,12 +6,16 @@ import {
   validateAddressData
 } from './Addresses/hooks'
 
+/**
+ * Addresses collection - Strict schema match with Supabase 'addresses' table
+ * DB columns: id, user_id, label, recipient_name, phone, address_line, city, postal_code, is_default, created_at, updated_at
+ */
 export const Addresses: CollectionConfig = {
   slug: 'addresses',
   dbName: 'addresses',
   admin: {
     useAsTitle: 'label',
-    defaultColumns: ['label', 'customer', 'addressType', 'isDefaultShipping', 'isDefaultBilling'],
+    defaultColumns: ['label', 'recipient_name', 'city', 'is_default'],
     group: 'E-commerce',
   },
   access: {
@@ -31,6 +35,7 @@ export const Addresses: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       required: true,
+      // Note: This maps to user_id in DB via the ecommerce plugin
       admin: {
         condition: ({ req }) => req.user?.role === 'admin',
       },
@@ -49,119 +54,55 @@ export const Addresses: CollectionConfig = {
     {
       name: 'label',
       type: 'text',
-      required: true,
+      defaultValue: 'Home',
       admin: {
-        description: 'A friendly name for this address (e.g., "Home", "Office", "Mom\'s House")',
+        description: 'A friendly name for this address (e.g., "Home", "Office")',
       },
     },
     {
-      name: 'title',
-      type: 'select',
-      options: [
-        { label: 'Mr.', value: 'mr' },
-        { label: 'Mrs.', value: 'mrs' },
-        { label: 'Ms.', value: 'ms' },
-        { label: 'Dr.', value: 'dr' },
-        { label: 'Prof.', value: 'prof' },
-      ],
-    },
-    {
-      name: 'firstName',
+      name: 'recipient_name',
       type: 'text',
       required: true,
-    },
-    {
-      name: 'lastName',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'company',
-      type: 'text',
+      admin: {
+        description: 'Full name of the recipient',
+      },
     },
     {
       name: 'phone',
       type: 'text',
-      required: true,
+      admin: {
+        description: 'Contact phone number for delivery',
+      },
     },
     {
-      name: 'addressLine1',
+      name: 'address_line',
       type: 'text',
       required: true,
-      label: 'Address Line 1',
-    },
-    {
-      name: 'addressLine2',
-      type: 'text',
-      label: 'Address Line 2',
+      admin: {
+        description: 'Full street address',
+      },
     },
     {
       name: 'city',
       type: 'text',
-      required: true,
-    },
-    {
-      name: 'state',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'postalCode',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'country',
-      type: 'text',
-      required: true,
-      defaultValue: 'Indonesia',
-    },
-    {
-      name: 'addressType',
-      type: 'select',
-      required: true,
-      defaultValue: 'both',
-      options: [
-        { label: 'Shipping Only', value: 'shipping' },
-        { label: 'Billing Only', value: 'billing' },
-        { label: 'Both Shipping and Billing', value: 'both' },
-      ],
       admin: {
-        description: 'Specify whether this address can be used for shipping, billing, or both',
+        description: 'City name',
       },
     },
     {
-      name: 'isDefaultShipping',
+      name: 'postal_code',
+      type: 'text',
+      admin: {
+        description: 'Postal/ZIP code',
+      },
+    },
+    {
+      name: 'is_default',
       type: 'checkbox',
       defaultValue: false,
       admin: {
-        description: 'Set as default shipping address',
-        condition: (data) => data.addressType === 'shipping' || data.addressType === 'both',
-      },
-    },
-    {
-      name: 'isDefaultBilling',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        description: 'Set as default billing address',
-        condition: (data) => data.addressType === 'billing' || data.addressType === 'both',
-      },
-    },
-    {
-      name: 'deliveryInstructions',
-      type: 'textarea',
-      admin: {
-        description: 'Special delivery instructions (e.g., "Leave at front door", "Ring doorbell twice")',
-        condition: (data) => data.addressType === 'shipping' || data.addressType === 'both',
-      },
-    },
-    {
-      name: 'isActive',
-      type: 'checkbox',
-      defaultValue: true,
-      admin: {
-        description: 'Inactive addresses are hidden from selection but preserved for order history',
+        description: 'Set as the default address for this customer',
+        position: 'sidebar',
       },
     },
   ],

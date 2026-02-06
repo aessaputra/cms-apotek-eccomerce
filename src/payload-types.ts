@@ -204,10 +204,6 @@ export interface User {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
-  /**
-   * Controls whether the user account is active. Inactive users cannot log in.
-   */
-  is_active?: boolean | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -260,21 +256,9 @@ export interface Order {
   amount?: number | null;
   currency?: 'USD' | null;
   /**
-   * Indicates if this order contains prescription items
-   */
-  prescription_required?: boolean | null;
-  /**
    * Indicates if prescription has been verified by an admin
    */
   prescription_verified?: boolean | null;
-  /**
-   * Admin user who verified the prescription
-   */
-  verified_by?: (number | null) | User;
-  /**
-   * Notes about prescription verification or special instructions
-   */
-  prescription_notes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -437,30 +421,6 @@ export interface Category {
    * URL of the category logo/icon image
    */
   logo_url?: string | null;
-  /**
-   * Brief description of the product category
-   */
-  description?: string | null;
-  /**
-   * Check if this category contains controlled substances requiring special handling
-   */
-  controlled_substance?: boolean | null;
-  /**
-   * Check if products in this category typically require prescriptions
-   */
-  prescription_required?: boolean | null;
-  /**
-   * Minimum age required to purchase products in this category (leave empty for no restriction)
-   */
-  age_restriction?: number | null;
-  /**
-   * Controls whether this category is active and visible to customers
-   */
-  is_active?: boolean | null;
-  /**
-   * Sort order for category display (lower numbers appear first)
-   */
-  sort_order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -493,7 +453,7 @@ export interface Transaction {
     country?: string | null;
     phone?: string | null;
   };
-  status?: ('pending' | 'succeeded' | 'failed') | null;
+  status?: ('pending' | 'settlement' | 'capture' | 'deny' | 'cancel' | 'expire' | 'failure') | null;
   customer?: (number | null) | User;
   customerEmail?: string | null;
   order?: (number | null) | Order;
@@ -503,6 +463,8 @@ export interface Transaction {
   midtrans_order_id?: string | null;
   midtrans_transaction_id?: string | null;
   midtrans_payment_type?: string | null;
+  paid_at?: string | null;
+  expired_at?: string | null;
   midtrans_response?:
     | {
         [k: string]: unknown;
@@ -564,40 +526,33 @@ export interface Address {
   id: number;
   customer?: (number | null) | User;
   /**
-   * A friendly name for this address (e.g., "Home", "Office", "Mom's House")
+   * A friendly name for this address (e.g., "Home", "Office")
    */
-  label: string;
-  title?: ('mr' | 'mrs' | 'ms' | 'dr' | 'prof') | null;
-  firstName: string;
-  lastName: string;
-  company?: string | null;
-  phone: string;
-  addressLine1: string;
-  addressLine2?: string | null;
-  city: string;
-  state: string;
-  postalCode: string;
-  country: string;
+  label?: string | null;
   /**
-   * Specify whether this address can be used for shipping, billing, or both
+   * Full name of the recipient
    */
-  addressType: 'shipping' | 'billing' | 'both';
+  recipient_name: string;
   /**
-   * Set as default shipping address
+   * Contact phone number for delivery
    */
-  isDefaultShipping?: boolean | null;
+  phone?: string | null;
   /**
-   * Set as default billing address
+   * Full street address
    */
-  isDefaultBilling?: boolean | null;
+  address_line: string;
   /**
-   * Special delivery instructions (e.g., "Leave at front door", "Ring doorbell twice")
+   * City name
    */
-  deliveryInstructions?: string | null;
+  city?: string | null;
   /**
-   * Inactive addresses are hidden from selection but preserved for order history
+   * Postal/ZIP code
    */
-  isActive?: boolean | null;
+  postal_code?: string | null;
+  /**
+   * Set as the default address for this customer
+   */
+  is_default?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -981,7 +936,6 @@ export interface UsersSelect<T extends boolean = true> {
   orders?: T;
   cart_items?: T;
   addresses?: T;
-  is_active?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1019,12 +973,6 @@ export interface CategoriesSelect<T extends boolean = true> {
   generateSlug?: T;
   slug?: T;
   logo_url?: T;
-  description?: T;
-  controlled_substance?: T;
-  prescription_required?: T;
-  age_restriction?: T;
-  is_active?: T;
-  sort_order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1226,22 +1174,12 @@ export interface FormSubmissionsSelect<T extends boolean = true> {
 export interface AddressesSelect<T extends boolean = true> {
   customer?: T;
   label?: T;
-  title?: T;
-  firstName?: T;
-  lastName?: T;
-  company?: T;
+  recipient_name?: T;
   phone?: T;
-  addressLine1?: T;
-  addressLine2?: T;
+  address_line?: T;
   city?: T;
-  state?: T;
-  postalCode?: T;
-  country?: T;
-  addressType?: T;
-  isDefaultShipping?: T;
-  isDefaultBilling?: T;
-  deliveryInstructions?: T;
-  isActive?: T;
+  postal_code?: T;
+  is_default?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1371,10 +1309,7 @@ export interface OrdersSelect<T extends boolean = true> {
   status?: T;
   amount?: T;
   currency?: T;
-  prescription_required?: T;
   prescription_verified?: T;
-  verified_by?: T;
-  prescription_notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1418,6 +1353,8 @@ export interface TransactionsSelect<T extends boolean = true> {
   midtrans_order_id?: T;
   midtrans_transaction_id?: T;
   midtrans_payment_type?: T;
+  paid_at?: T;
+  expired_at?: T;
   midtrans_response?: T;
   updatedAt?: T;
   createdAt?: T;

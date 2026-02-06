@@ -1,8 +1,8 @@
 import type { CollectionBeforeChangeHook } from 'payload'
 
 /**
- * Ensures only one default address per type per user.
- * When setting an address as default, unsets any existing default addresses of the same type.
+ * Ensures only one default address per user.
+ * When setting an address as default, unsets any existing default addresses.
  */
 export const ensureUniqueDefaultAddress: CollectionBeforeChangeHook = async ({
   data,
@@ -16,76 +16,41 @@ export const ensureUniqueDefaultAddress: CollectionBeforeChangeHook = async ({
     return data
   }
 
-  // Only process if we have customer data and are setting defaults
-  if (!data || !data.customer || (!data.isDefaultShipping && !data.isDefaultBilling)) {
+  // Only process if we have customer data and are setting as default
+  if (!data || !data.customer || !data.is_default) {
     return data
   }
 
   const customerId = typeof data.customer === 'object' ? data.customer.id : data.customer
 
   try {
-    // Handle default shipping address
-    if (data.isDefaultShipping) {
-      // Find existing default shipping addresses for this customer
-      const existingDefaultShipping = await req.payload.find({
+    // Find existing default addresses for this customer
+    const existingDefaults = await req.payload.find({
+      collection: 'addresses',
+      where: {
+        and: [
+          { customer: { equals: customerId } },
+          { is_default: { equals: true } },
+          ...(operation === 'update' && originalDoc?.id
+            ? [{ id: { not_equals: originalDoc.id } }]
+            : []
+          ),
+        ],
+      },
+      req,
+      overrideAccess: true,
+    })
+
+    // Unset existing default addresses
+    for (const address of existingDefaults.docs) {
+      await req.payload.update({
         collection: 'addresses',
-        where: {
-          and: [
-            { customer: { equals: customerId } },
-            { isDefaultShipping: { equals: true } },
-            ...(operation === 'update' && originalDoc?.id
-              ? [{ id: { not_equals: originalDoc.id } }]
-              : []
-            ),
-          ],
-        },
+        id: address.id,
+        data: { is_default: false },
         req,
-        overrideAccess: true, // Use admin access to ensure we can update other addresses
+        overrideAccess: true,
+        context: { skipDefaultAddressHook: true }, // Prevent infinite loop
       })
-
-      // Unset existing default shipping addresses
-      for (const address of existingDefaultShipping.docs) {
-        await req.payload.update({
-          collection: 'addresses',
-          id: address.id,
-          data: { isDefaultShipping: false },
-          req,
-          overrideAccess: true, // Use admin access to ensure we can update
-          context: { skipDefaultAddressHook: true }, // Prevent infinite loop
-        })
-      }
-    }
-
-    // Handle default billing address
-    if (data.isDefaultBilling) {
-      // Find existing default billing addresses for this customer
-      const existingDefaultBilling = await req.payload.find({
-        collection: 'addresses',
-        where: {
-          and: [
-            { customer: { equals: customerId } },
-            { isDefaultBilling: { equals: true } },
-            ...(operation === 'update' && originalDoc?.id
-              ? [{ id: { not_equals: originalDoc.id } }]
-              : []
-            ),
-          ],
-        },
-        req,
-        overrideAccess: true, // Use admin access to ensure we can update other addresses
-      })
-
-      // Unset existing default billing addresses
-      for (const address of existingDefaultBilling.docs) {
-        await req.payload.update({
-          collection: 'addresses',
-          id: address.id,
-          data: { isDefaultBilling: false },
-          req,
-          overrideAccess: true, // Use admin access to ensure we can update
-          context: { skipDefaultAddressHook: true }, // Prevent infinite loop
-        })
-      }
     }
   } catch (error) {
     req.payload.logger.error(`Error in ensureUniqueDefaultAddress hook: ${String(error)}`)

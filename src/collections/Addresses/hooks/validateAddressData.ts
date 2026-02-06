@@ -3,6 +3,7 @@ import { APIError } from 'payload'
 
 /**
  * Validates address data integrity and business rules.
+ * Matches Supabase schema: recipient_name, phone, address_line, city, postal_code
  */
 export const validateAddressData: CollectionBeforeValidateHook = async ({
   data,
@@ -10,40 +11,6 @@ export const validateAddressData: CollectionBeforeValidateHook = async ({
   operation,
 }) => {
   if (!data) return data
-
-  // Validate address type consistency
-  if (data.addressType) {
-    // If address type is 'shipping', ensure billing-specific fields are not set as default
-    if (data.addressType === 'shipping' && data.isDefaultBilling) {
-      throw new APIError(
-        'Cannot set shipping-only address as default billing address',
-        400,
-        null,
-        true
-      )
-    }
-
-    // If address type is 'billing', ensure shipping-specific fields are not set as default
-    if (data.addressType === 'billing' && data.isDefaultShipping) {
-      throw new APIError(
-        'Cannot set billing-only address as default shipping address',
-        400,
-        null,
-        true
-      )
-    }
-
-    // Clear inappropriate default flags based on address type
-    if (data.addressType === 'shipping') {
-      data.isDefaultBilling = false
-    }
-    
-    if (data.addressType === 'billing') {
-      data.isDefaultShipping = false
-      // Clear delivery instructions for billing-only addresses
-      data.deliveryInstructions = null
-    }
-  }
 
   // Validate phone number format (basic validation)
   if (data.phone) {
@@ -58,12 +25,12 @@ export const validateAddressData: CollectionBeforeValidateHook = async ({
     }
   }
 
-  // Validate postal code format for Indonesia (basic validation)
-  if (data.postalCode && data.country === 'ID') {
-    const indonesianPostalCodeRegex = /^\d{5}$/
-    if (!indonesianPostalCodeRegex.test(data.postalCode)) {
+  // Validate postal code format for Indonesia (5 digits)
+  if (data.postal_code) {
+    const postalCodeRegex = /^\d{5}$/
+    if (!postalCodeRegex.test(data.postal_code)) {
       throw new APIError(
-        'Indonesian postal codes must be 5 digits',
+        'Postal code must be 5 digits',
         400,
         null,
         true
@@ -71,10 +38,10 @@ export const validateAddressData: CollectionBeforeValidateHook = async ({
     }
   }
 
-  // Ensure label is unique per customer (only for create operations to avoid complexity)
+  // Ensure label is unique per customer (only for create operations)
   if (data.label && data.customer && operation === 'create') {
     const customerId = typeof data.customer === 'object' ? data.customer.id : data.customer
-    
+
     try {
       const existingAddresses = await req.payload.find({
         collection: 'addresses',
@@ -82,7 +49,6 @@ export const validateAddressData: CollectionBeforeValidateHook = async ({
           and: [
             { customer: { equals: customerId } },
             { label: { equals: data.label } },
-            { isActive: { equals: true } },
           ],
         },
         req,

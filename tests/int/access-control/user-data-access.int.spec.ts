@@ -66,15 +66,11 @@ describe('User Data Access Control', () => {
       data: {
         customer: customerUser1.id,
         label: 'Home',
-        firstName: 'Customer',
-        lastName: 'One',
+        recipient_name: 'Customer One',
         phone: '+1234567891',
-        addressLine1: '123 Main St',
+        address_line: '123 Main St',
         city: 'Jakarta',
-        state: 'DKI Jakarta',
-        postalCode: '12345',
-        country: 'Indonesia',
-        addressType: 'both',
+        postal_code: '12345',
       },
     })
 
@@ -83,15 +79,11 @@ describe('User Data Access Control', () => {
       data: {
         customer: customerUser2.id,
         label: 'Home',
-        firstName: 'Customer',
-        lastName: 'Two',
+        recipient_name: 'Customer Two',
         phone: '+1234567892',
-        addressLine1: '456 Oak Ave',
+        address_line: '456 Oak Ave',
         city: 'Bandung',
-        state: 'West Java',
-        postalCode: '54321',
-        country: 'Indonesia',
-        addressType: 'both',
+        postal_code: '54321',
       },
     })
   })
@@ -253,7 +245,7 @@ describe('User Data Access Control', () => {
 
       const customer1Orders = result.docs.filter((doc: any) => doc.customer === customerUser1.id)
       expect(customer1Orders.length).toBeGreaterThanOrEqual(1)
-      
+
       const hasOtherCustomerOrders = result.docs.some((doc: any) => doc.customer === customerUser2.id)
       expect(hasOtherCustomerOrders).toBe(false)
     })
@@ -351,7 +343,7 @@ describe('User Data Access Control', () => {
 
       const customer1Carts = result.docs.filter((doc: any) => doc.customer === customerUser1.id)
       expect(customer1Carts.length).toBeGreaterThanOrEqual(1)
-      
+
       const hasOtherCustomerCarts = result.docs.some((doc: any) => doc.customer === customerUser2.id)
       expect(hasOtherCustomerCarts).toBe(false)
     })

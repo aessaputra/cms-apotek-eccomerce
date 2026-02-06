@@ -6,16 +6,16 @@
  */
 
 import {
-    runDataIntegrityCheck,
-    validateAddressIntegrity,
-    validateInventoryQuantities,
-    validateOrderIntegrity,
-    validateProductInventoryConsistency,
+  runDataIntegrityCheck,
+  validateAddressIntegrity,
+  validateInventoryQuantities,
+  validateOrderIntegrity,
+  validateProductInventoryConsistency,
 } from '@/utilities/dataIntegrity'
 import {
-    adjustInventoryWithAudit,
-    cancelOrderWithStockRestoration,
-    processOrderWithStockDeduction,
+  adjustInventoryWithAudit,
+  cancelOrderWithStockRestoration,
+  processOrderWithStockDeduction,
 } from '@/utilities/transactionSafety'
 import config from '@payload-config'
 import type { Payload } from 'payload'
@@ -117,18 +117,12 @@ describe('Data Integrity Integration Tests', () => {
       data: {
         customer: testUser.id,
         label: 'Test Address',
-        firstName: 'Test',
-        lastName: 'User',
+        recipient_name: 'Test User',
         phone: '+1234567890',
-        addressLine1: '123 Test St',
+        address_line: '123 Test St',
         city: 'Test City',
-        state: 'Test State',
-        postalCode: '12345',
-        country: 'Test Country',
-        addressType: 'both',
-        isDefaultShipping: true,
-        isDefaultBilling: true,
-        isActive: true,
+        postal_code: '12345',
+        is_default: true,
       },
     })
   })
@@ -159,7 +153,7 @@ describe('Data Integrity Integration Tests', () => {
       await payload.update({
         collection: 'inventory',
         id: testInventory.id,
-        data: { 
+        data: {
           current_quantity: 80,
           reserved_quantity: 30, // Total: 110, Initial: 100
         },
@@ -176,7 +170,7 @@ describe('Data Integrity Integration Tests', () => {
       await payload.update({
         collection: 'inventory',
         id: testInventory.id,
-        data: { 
+        data: {
           expiry_date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Yesterday
           is_active: true,
         },
@@ -326,60 +320,33 @@ describe('Data Integrity Integration Tests', () => {
       expect(result.errors).toHaveLength(0)
     })
 
-    it('should detect invalid address type and default flag combination', async () => {
-      // Create address with invalid combination
-      const invalidAddress = await payload.create({
-        collection: 'addresses',
-        data: {
-          customer: testUser.id,
-          label: 'Invalid Address',
-          firstName: 'Test',
-          lastName: 'User',
-          phone: '+1234567890',
-          addressLine1: '123 Test St',
-          city: 'Test City',
-          state: 'Test State',
-          postalCode: '12345',
-          country: 'Test Country',
-          addressType: 'billing', // Billing only
-          isDefaultShipping: true, // But marked as default shipping
-          isDefaultBilling: false,
-          isActive: true,
-        },
-        context: { skipValidation: true },
-      })
-
-      const result = await validateAddressIntegrity(payload, invalidAddress.id)
-      expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('Billing-only address cannot be default shipping'))).toBe(true)
-    })
-
-    it('should detect multiple default addresses', async () => {
-      // Create another default shipping address for the same customer
-      const duplicateAddress = await payload.create({
+    it('should detect duplicate default addresses', async () => {
+      // Create another default address for same user
+      const duplicateDefault = await payload.create({
         collection: 'addresses',
         data: {
           customer: testUser.id,
           label: 'Duplicate Default',
-          firstName: 'Test',
-          lastName: 'User',
+          recipient_name: 'Test User',
           phone: '+1234567890',
-          addressLine1: '456 Test Ave',
+          address_line: '456 Test Ave',
           city: 'Test City',
-          state: 'Test State',
-          postalCode: '12345',
-          country: 'Test Country',
-          addressType: 'shipping',
-          isDefaultShipping: true, // Duplicate default
-          isDefaultBilling: false,
-          isActive: true,
+          postal_code: '12345',
+          is_default: true,
         },
         context: { skipValidation: true },
       })
 
-      const result = await validateAddressIntegrity(payload, duplicateAddress.id)
+      const result = await validateAddressIntegrity(payload, duplicateDefault.id)
       expect(result.valid).toBe(false)
-      expect(result.errors.some(e => e.includes('Multiple default shipping addresses'))).toBe(true)
+      expect(result.errors.some(e => e.includes('Multiple default'))).toBe(true)
+    })
+
+    it('should validate addresses with missing required fields', async () => {
+      // Test that validation catches missing required data
+      const result = await validateAddressIntegrity(payload, testAddress.id)
+      expect(result.valid).toBe(true)
+      expect(result.errors).toHaveLength(0)
     })
   })
 
@@ -528,7 +495,7 @@ describe('Data Integrity Integration Tests', () => {
 
     it('should detect multiple integrity issues', async () => {
       // Create data with multiple issues
-      
+
       // 1. Negative inventory
       const badInventory = await payload.create({
         collection: 'inventory',

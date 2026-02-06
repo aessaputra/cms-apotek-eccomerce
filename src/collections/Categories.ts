@@ -4,6 +4,10 @@ import { slugField } from 'payload'
 import { adminOnly } from '@/access/adminOnly'
 import { publicAccess } from '@/access/publicAccess'
 
+/**
+ * Categories collection - Strict schema match with Supabase 'categories' table
+ * DB columns: id, name, slug, logo_url, created_at, updated_at
+ */
 export const Categories: CollectionConfig = {
   slug: 'categories',
   dbName: 'categories',
@@ -16,7 +20,7 @@ export const Categories: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     group: 'Content',
-    defaultColumns: ['name', 'logo', 'controlled_substance', 'prescription_required', 'is_active'],
+    defaultColumns: ['name', 'slug', 'logo_url'],
   },
   fields: [
     {
@@ -36,59 +40,6 @@ export const Categories: CollectionConfig = {
       label: 'Logo URL',
       admin: {
         description: 'URL of the category logo/icon image',
-      },
-    },
-    {
-      name: 'description',
-      type: 'textarea',
-      admin: {
-        description: 'Brief description of the product category',
-      },
-    },
-    {
-      name: 'controlled_substance',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        description: 'Check if this category contains controlled substances requiring special handling',
-        position: 'sidebar',
-      },
-    },
-    {
-      name: 'prescription_required',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        description: 'Check if products in this category typically require prescriptions',
-        position: 'sidebar',
-      },
-    },
-    {
-      name: 'age_restriction',
-      type: 'number',
-      min: 0,
-      max: 100,
-      admin: {
-        description: 'Minimum age required to purchase products in this category (leave empty for no restriction)',
-        position: 'sidebar',
-      },
-    },
-    {
-      name: 'is_active',
-      type: 'checkbox',
-      defaultValue: true,
-      admin: {
-        description: 'Controls whether this category is active and visible to customers',
-        position: 'sidebar',
-      },
-    },
-    {
-      name: 'sort_order',
-      type: 'number',
-      defaultValue: 0,
-      admin: {
-        description: 'Sort order for category display (lower numbers appear first)',
-        position: 'sidebar',
       },
     },
   ],
