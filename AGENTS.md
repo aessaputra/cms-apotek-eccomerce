@@ -19,9 +19,7 @@ Use Supabase MCP (e.g. `list_tables`) as the source of truth and keep `src/db/su
 
 ### Supabase Integration
 
-This Payload CMS instance uses `@payloadcms/db-postgres` to connect to Supabase PostgreSQL. See `.cursor/rules/supabase-integration.md` for configuration details.
-
-**Live schema reference**: use Supabase MCP (e.g. `list_tables`) as the source of truth, then keep `src/db/supabase-schema.ts` aligned.
+This Payload CMS instance uses `@payloadcms/db-postgres` to connect to Supabase PostgreSQL. See `.agent/rules/supabase-integration.md` for configuration details.
 
 ---
 
@@ -1126,7 +1124,7 @@ export const myPlugin =
 
 ## Additional Context Files
 
-For deeper exploration of specific topics, refer to the context files located in `.cursor/rules/`:
+For deeper exploration of specific topics, refer to the context files located in `.agent/rules/`:
 
 ### Available Context Files
 

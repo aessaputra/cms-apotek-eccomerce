@@ -19,8 +19,8 @@ export const protectedEndpoint: Endpoint = {
     }
 
     const data = await req.payload.find({
-      collection: 'posts',
-      where: { author: { equals: req.user.id } },
+      collection: 'orders',
+      where: { userId: { equals: req.user.id } },
     })
 
     return Response.json(data)

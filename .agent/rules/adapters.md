@@ -13,7 +13,7 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 export default buildConfig({
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.SUPABASE_DATABASE_URL,
+      connectionString: process.env.DATABASE_URL,
     },
   }),
 })

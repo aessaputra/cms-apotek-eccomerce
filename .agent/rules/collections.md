@@ -8,17 +8,18 @@ description: >-
 ## Basic Collection
 
 ```typescript
-export const Posts: CollectionConfig = {
-  slug: 'posts',
+export const Products: CollectionConfig = {
+  slug: 'products',
   admin: {
-    useAsTitle: 'title',
-    defaultColumns: ['title', 'author', 'status', 'createdAt'],
+    useAsTitle: 'name',
+    defaultColumns: ['name', 'price', 'category_id', 'createdAt'],
   },
   fields: [
-    { name: 'title', type: 'text', required: true },
+    { name: 'name', type: 'text', required: true },
     { name: 'slug', type: 'text', unique: true, index: true },
-    { name: 'content', type: 'richText' },
-    { name: 'author', type: 'relationship', relationTo: 'users' },
+    { name: 'description', type: 'textarea' },
+    { name: 'category_id', type: 'relationship', relationTo: 'categories' },
+    { name: 'price', type: 'number' },
   ],
   timestamps: true,
 }
@@ -32,11 +33,10 @@ export const Users: CollectionConfig = {
   auth: true,
   fields: [
     {
-      name: 'roles',
+      name: 'role',
       type: 'select',
-      hasMany: true,
-      options: ['admin', 'editor', 'user'],
-      defaultValue: ['user'],
+      options: ['admin', 'customer'],
+      defaultValue: 'customer',
       saveToJWT: true, // Include in JWT for fast access checks
     },
   ],
@@ -49,23 +49,16 @@ export const Users: CollectionConfig = {
 export const Media: CollectionConfig = {
   slug: 'media',
   upload: {
-    staticDir: 'media',
-    mimeTypes: ['image/*'],
-    imageSizes: [
-      { name: 'thumbnail', width: 400, height: 300 },
-      { name: 'card', width: 768, height: 1024 },
-    ],
-    focalPoint: true,
-    crop: true,
+    staticDir: 'public/media',
   },
 }
 ```
 
-## Versioning & Drafts
+## Versioning & Drafts (Optional)
 
 ```typescript
-export const Pages: CollectionConfig = {
-  slug: 'pages',
+export const Products: CollectionConfig = {
+  slug: 'products',
   versions: {
     drafts: { autosave: true, schedulePublish: true },
     maxPerDoc: 100,

@@ -34,31 +34,31 @@ description: >-
 
 ```typescript
 // Find documents
-const posts = await payload.find({
-  collection: 'posts',
-  where: { status: { equals: 'published' } },
+const products = await payload.find({
+  collection: 'products',
+  where: { price: { greater_than: 0 } },
   depth: 2,
   limit: 10,
   sort: '-createdAt',
 })
 
 // Find by ID
-const post = await payload.findByID({
-  collection: 'posts',
+const product = await payload.findByID({
+  collection: 'products',
   id: '123',
 })
 
 // Create
-const post = await payload.create({
-  collection: 'posts',
-  data: { title: 'New Post' },
+const product = await payload.create({
+  collection: 'products',
+  data: { name: 'New Product' },
 })
 
 // Update
 await payload.update({
-  collection: 'posts',
+  collection: 'products',
   id: '123',
-  data: { status: 'published' },
+  data: { price: 100 },
 })
 ```
 
@@ -66,11 +66,11 @@ await payload.update({
 
 ```typescript
 // ❌ WRONG: Bypasses access control
-await payload.find({ collection: 'posts', user: currentUser })
+await payload.find({ collection: 'orders', user: currentUser })
 
 // ✅ CORRECT: Respects permissions
 await payload.find({
-  collection: 'posts',
+  collection: 'orders',
   user: currentUser,
   overrideAccess: false, // Required!
 })

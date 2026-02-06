@@ -8,14 +8,14 @@ description: >-
 ## Collection Hooks
 
 ```typescript
-export const Posts: CollectionConfig = {
-  slug: 'posts',
+export const Products: CollectionConfig = {
+  slug: 'products',
   hooks: {
     // Before validation - format data
     beforeValidate: [
       async ({ data, operation }) => {
-        if (operation === 'create') {
-          data.slug = slugify(data.title)
+        if (operation === 'create' && data.name) {
+          data.slug = slugify(data.name)
         }
         return data
       },
@@ -23,9 +23,9 @@ export const Posts: CollectionConfig = {
 
     // Before save - business logic
     beforeChange: [
-      async ({ data, req, operation }) => {
-        if (operation === 'update' && data.status === 'published') {
-          data.publishedAt = new Date()
+      async ({ data }) => {
+        if (typeof data.price === 'number' && data.price < 0) {
+          throw new Error('Price must be >= 0')
         }
         return data
       },
@@ -33,7 +33,7 @@ export const Posts: CollectionConfig = {
 
     // After save - side effects
     afterChange: [
-      async ({ doc, req, operation, context }) => {
+      async ({ doc, operation, context }) => {
         if (context.skipNotification) return
         if (operation === 'create') {
           await sendNotification(doc)
@@ -46,8 +46,8 @@ export const Posts: CollectionConfig = {
     beforeDelete: [
       async ({ req, id }) => {
         await req.payload.delete({
-          collection: 'comments',
-          where: { post: { equals: id } },
+          collection: 'product_images',
+          where: { productId: { equals: id } },
           req, // Important for transaction
         })
       },

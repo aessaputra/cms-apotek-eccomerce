@@ -21,7 +21,7 @@ This repository contains the **Payload CMS admin panel** for Apotek E-commerce.
 
 ## Database Schema
 
-10 Tables in Supabase PostgreSQL:
+Core business tables (non-exhaustive):
 - `profiles` - User profiles (admin/customer)
 - `addresses` - Shipping addresses
 - `categories` - Product categories
@@ -33,4 +33,4 @@ This repository contains the **Payload CMS admin panel** for Apotek E-commerce.
 - `cart_items` - Shopping cart (React Native only)
 - `payments` - Midtrans payments
 
-Use Supabase MCP (`list_tables`) as the source of truth and keep `src/db/supabase-schema.ts` aligned.
+Use Supabase MCP (`list_tables`) as the source of truth and keep `src/db/supabase-schema.ts` aligned. Note: Supabase also contains Payload internal tables (e.g. preferences, locks, migrations).

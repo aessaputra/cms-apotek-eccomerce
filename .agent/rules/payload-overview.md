@@ -18,7 +18,6 @@ description: >-
 ```
 src/
 ├── app/
-│   ├── (frontend)/          # Frontend routes
 │   └── (payload)/           # Payload admin routes
 ├── collections/             # Collection configs
 ├── globals/                 # Global configs
@@ -35,7 +34,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 
 const payload = await getPayload({ config })
-const { docs } = await payload.find({ collection: 'posts' })
+const { docs } = await payload.find({ collection: 'products' })
 ```
 
 ## Quick Reference

@@ -16,12 +16,12 @@ export const authenticated: Access = ({ req: { user } }) => Boolean(user)
 
 // Admin only
 export const adminOnly: Access = ({ req: { user } }) => {
-  return user?.roles?.includes('admin')
+  return user?.role === 'admin'
 }
 
 // Admin or self
 export const adminOrSelf: Access = ({ req: { user } }) => {
-  if (user?.roles?.includes('admin')) return true
+  if (user?.role === 'admin') return true
   return { id: { equals: user?.id } }
 }
 ```
@@ -29,10 +29,10 @@ export const adminOrSelf: Access = ({ req: { user } }) => {
 ## Row-Level Security
 
 ```typescript
-// Organization-scoped access
-export const organizationScoped: Access = ({ req: { user } }) => {
-  if (user?.roles?.includes('admin')) return true
-  return { organization: { equals: user?.organization } }
+// Order ownership access
+export const ownOrdersOnly: Access = ({ req: { user } }) => {
+  if (user?.role === 'admin') return true
+  return { userId: { equals: user?.id } }
 }
 ```
 
@@ -45,7 +45,7 @@ export const organizationScoped: Access = ({ req: { user } }) => {
   access: {
     read: ({ req: { user }, doc }) => {
       if (user?.id === doc?.id) return true
-      return user?.roles?.includes('admin')
+      return user?.role === 'admin'
     },
   },
 }
