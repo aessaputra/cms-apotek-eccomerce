@@ -191,6 +191,9 @@ export interface User {
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  /**
+   * Addresses for this customer (read-only, managed in mobile app). View in User edit to see which addresses belong to this user.
+   */
   addresses?: {
     docs?: (string | Address)[];
     hasNextPage?: boolean;
@@ -533,41 +536,37 @@ export interface Cart {
   createdAt: string;
 }
 /**
+ * Transactions are created by the payment flow (Midtrans). Admin can read and update for reconciliation.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "transactions".
  */
 export interface Transaction {
   id: string;
+  /**
+   * Order this payment belongs to
+   */
+  order: string | Order;
+  /**
+   * Payment amount
+   */
+  amount: number;
+  status: 'pending' | 'settlement' | 'capture' | 'deny' | 'cancel' | 'expire' | 'failure';
+  /**
+   * Payment method (e.g. midtrans)
+   */
+  paymentMethod?: string | null;
+  /**
+   * Items in this payment
+   */
   items?:
     | {
-        product?: (string | null) | Product;
+        product: string | Product;
         variant?: (string | null) | Variant;
         quantity: number;
         id?: string | null;
       }[]
     | null;
-  paymentMethod?: string | null;
-  midtrans_meta?: {};
-  billingAddress?: {
-    title?: string | null;
-    firstName?: string | null;
-    lastName?: string | null;
-    company?: string | null;
-    addressLine1?: string | null;
-    addressLine2?: string | null;
-    city?: string | null;
-    state?: string | null;
-    postalCode?: string | null;
-    country?: string | null;
-    phone?: string | null;
-  };
-  status?: ('pending' | 'settlement' | 'capture' | 'deny' | 'cancel' | 'expire' | 'failure') | null;
-  customer?: (string | null) | User;
-  customerEmail?: string | null;
-  order?: (string | null) | Order;
-  cart?: (string | null) | Cart;
-  amount?: number | null;
-  currency?: 'USD' | null;
   midtrans_order_id?: string | null;
   midtrans_transaction_id?: string | null;
   midtrans_payment_type?: string | null;
@@ -616,10 +615,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'carts';
         value: string | Cart;
-      } | null)
-    | ({
-        relationTo: 'transactions';
-        value: string | Transaction;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -884,6 +879,10 @@ export interface OrdersSelect<T extends boolean = true> {
  * via the `definition` "transactions_select".
  */
 export interface TransactionsSelect<T extends boolean = true> {
+  order?: T;
+  amount?: T;
+  status?: T;
+  paymentMethod?: T;
   items?:
     | T
     | {
@@ -892,30 +891,6 @@ export interface TransactionsSelect<T extends boolean = true> {
         quantity?: T;
         id?: T;
       };
-  paymentMethod?: T;
-  midtrans_meta?: T | {};
-  billingAddress?:
-    | T
-    | {
-        title?: T;
-        firstName?: T;
-        lastName?: T;
-        company?: T;
-        addressLine1?: T;
-        addressLine2?: T;
-        city?: T;
-        state?: T;
-        postalCode?: T;
-        country?: T;
-        phone?: T;
-      };
-  status?: T;
-  customer?: T;
-  customerEmail?: T;
-  order?: T;
-  cart?: T;
-  amount?: T;
-  currency?: T;
   midtrans_order_id?: T;
   midtrans_transaction_id?: T;
   midtrans_payment_type?: T;

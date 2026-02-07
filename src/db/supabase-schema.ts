@@ -176,7 +176,7 @@ export const cartItems = pgTable('cart_items', {
  * Payment records - Midtrans integration
  */
 export const payments = pgTable('payments', {
-    id: uuid('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     orderId: uuid('order_id').notNull(),
     midtransOrderId: varchar('midtrans_order_id', { length: 100 }),
     midtransTransactionId: varchar('midtrans_transaction_id', { length: 100 }),
@@ -189,6 +189,18 @@ export const payments = pgTable('payments', {
     midtransResponse: jsonb('midtrans_response'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+})
+
+/**
+ * Payment items - Array field for transactions (product, variant, quantity)
+ */
+export const paymentsItems = pgTable('payments_items', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    parentId: uuid('_parent_id').references(() => payments.id, { onDelete: 'cascade' }),
+    order: integer('_order').notNull().default(0),
+    productId: uuid('product_id'),
+    variantId: uuid('variant_id'),
+    quantity: integer('quantity').default(1),
 })
 
 // ============================================================================
@@ -220,6 +232,7 @@ export const supabaseSchemaHook = ({ schema }: { schema: any; adapter: any }) =>
             order_items: orderItems,
             cart_items: cartItems,
             payments,
+            payments_items: paymentsItems,
             profiles_sessions: profilesSessions,
         },
     }

@@ -19,7 +19,7 @@ export const Addresses: CollectionConfig = {
   lockDocuments: false,
   admin: {
     useAsTitle: 'label',
-    defaultColumns: ['label', 'recipient_name', 'city', 'is_default'],
+    defaultColumns: ['label', 'user', 'recipient_name', 'city', 'is_default'],
     group: 'Users',
     description: 'Read-only. Customers manage addresses in the mobile app.',
   },

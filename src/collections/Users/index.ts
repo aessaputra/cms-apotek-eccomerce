@@ -108,7 +108,8 @@ export const Users: CollectionConfig = {
       on: 'user',
       admin: {
         allowCreate: false,
-        defaultColumns: ['id'],
+        defaultColumns: ['label', 'recipient_name', 'city', 'is_default'],
+        description: 'Addresses for this customer (read-only, managed in mobile app). View in User edit to see which addresses belong to this user.',
       },
     },
   ],
