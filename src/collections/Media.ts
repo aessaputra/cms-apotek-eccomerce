@@ -17,7 +17,7 @@ export const Media: CollectionConfig = {
   lockDocuments: false,
   admin: {
     group: 'Media',
-    hidden: true, // Upload inline in Products (Images tab) and Categories (Logo) — no separate Media menu
+    hidden: true, // Upload inline in Products (Images tab) and Categories (Logo) — context-based workflow
   },
   slug: 'media',
   // Media table uses integer id in Supabase; override global idType: 'uuid' for this collection

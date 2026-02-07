@@ -70,3 +70,6 @@ Run `supabase/migrations/20250207_add_upload_columns.sql` after first Payload ru
 2. **Sync URL to legacy fields** for backward compatibility (React Native)
 3. **Conditional plugin** – enable S3 only when `S3_ENDPOINT` is set
 4. **filterOptions** – restrict upload to images only
+5. **Cascade delete to S3** – when deleting ProductImage or clearing Category logo, delete the associated Media document so `@payloadcms/storage-s3` handles S3 file removal (no orphaned files):
+   - `ProductImages` afterDelete → delete Media
+   - `Categories` afterChange → when logo cleared/replaced, delete old Media

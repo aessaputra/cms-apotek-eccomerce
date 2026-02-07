@@ -84,7 +84,7 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               admin: {
                 allowCreate: true,
                 defaultColumns: ['image_url', 'media', 'is_primary', 'sort_order'],
-                description: 'Add images by uploading directly here. Set primary image for listing. No Media menu needed.',
+                description: 'Daftar gambar produk. Klik baris untuk mengedit/hapus. Tombol + untuk menambah. Semua kelola di sini — tidak perlu pindah menu.',
               },
             },
           ],

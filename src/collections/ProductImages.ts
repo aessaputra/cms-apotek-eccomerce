@@ -2,7 +2,10 @@ import { adminOnly } from '@/access/adminOnly'
 import { publicAccess } from '@/access/publicAccess'
 import type { CollectionConfig } from 'payload'
 
-import { syncImageUrlFromUpload } from './ProductImages/hooks/syncImageUrlFromUpload'
+import {
+    deleteMediaOnProductImageDelete,
+    syncImageUrlFromUpload,
+} from './ProductImages/hooks'
 
 export const ProductImages: CollectionConfig = {
     slug: 'product-images',
@@ -12,7 +15,7 @@ export const ProductImages: CollectionConfig = {
         useAsTitle: 'image_url',
         group: 'Content',
         defaultColumns: ['image_url', 'product', 'is_primary', 'sort_order'],
-        hidden: true, // Manage via Products > Images tab (Join field)
+        hidden: true, // Manage via Products > Images tab (context-based workflow)
     },
     access: {
         create: adminOnly,
@@ -96,6 +99,7 @@ export const ProductImages: CollectionConfig = {
         },
     ],
     hooks: {
+        afterDelete: [deleteMediaOnProductImageDelete],
         beforeValidate: [
             ({ data }) => {
                 // Normalize media ID: Media uses customIDType 'number', client may send string or object

@@ -265,7 +265,7 @@ export interface Product {
   price: number;
   description?: string | null;
   /**
-   * Add images by uploading directly here. Set primary image for listing. No Media menu needed.
+   * Daftar gambar produk. Klik baris untuk mengedit/hapus. Tombol + untuk menambah. Semua kelola di sini — tidak perlu pindah menu.
    */
   images?: {
     docs?: (string | ProductImage)[];
@@ -420,7 +420,7 @@ export interface Category {
   name: string;
   slug?: string | null;
   /**
-   * Upload logo directly here — no need to go to Media menu
+   * Upload logo kategori. Ganti: klik pilih file baru. Hapus: klik X pada preview. Kelola di sini — tidak perlu pindah menu.
    */
   logo?: (string | null) | Media;
   /**

@@ -3,6 +3,8 @@ import type { CollectionConfig } from 'payload'
 import { adminOnly } from '@/access/adminOnly'
 import { publicAccess } from '@/access/publicAccess'
 
+import { deleteMediaWhenLogoCleared } from './Categories/hooks/deleteMediaWhenLogoCleared'
+
 /**
  * Categories collection - Strict schema match with Supabase 'categories' table
  * DB columns: id, name, slug, logo_url, created_at, updated_at
@@ -48,7 +50,7 @@ export const Categories: CollectionConfig = {
       // @ts-expect-error dbName is valid for postgres adapter
       dbName: 'logo_id',
       admin: {
-        description: 'Upload logo directly here — no need to go to Media menu',
+        description: 'Upload logo kategori. Ganti: klik pilih file baru. Hapus: klik X pada preview. Kelola di sini — tidak perlu pindah menu.',
       },
       // Custom validate: Media uses integer id (customIDType 'number'), default validation
       // fails when client sends string "5" or object {id:5}. Accept both.
@@ -90,6 +92,7 @@ export const Categories: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [deleteMediaWhenLogoCleared],
     beforeChange: [
       async ({ data, operation }) => {
         // Auto-generate slug if not provided
