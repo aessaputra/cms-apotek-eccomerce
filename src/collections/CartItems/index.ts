@@ -1,5 +1,6 @@
 import { adminOnlyFieldAccess } from '@/access/adminOnlyFieldAccess'
 import { adminOrUserId } from '@/access/adminOrUserId'
+import { cartItemsCreateAccess } from '@/access/cartItemsCreateAccess'
 import type { CollectionConfig } from 'payload'
 
 export const CartItems: CollectionConfig = {
@@ -9,9 +10,11 @@ export const CartItems: CollectionConfig = {
     admin: {
         useAsTitle: 'product',
         defaultColumns: ['product', 'quantity', 'user'],
+        group: 'Sales',
+        description: 'Cart items are created by customers via the app. Admin can view, update, and delete for support.',
     },
     access: {
-        create: adminOrUserId,
+        create: cartItemsCreateAccess,
         read: adminOrUserId,
         update: adminOrUserId,
         delete: adminOrUserId,

@@ -17,7 +17,7 @@ export const Addresses: CollectionConfig = {
   admin: {
     useAsTitle: 'label',
     defaultColumns: ['label', 'recipient_name', 'city', 'is_default'],
-    group: 'E-commerce',
+    group: 'Users',
   },
   access: {
     create: ({ req }) => Boolean(req?.user),

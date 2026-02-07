@@ -83,6 +83,7 @@ export const categories = pgTable('categories', {
     id: uuid('id').primaryKey(),
     name: text('name').notNull(),
     slug: varchar('slug', { length: 255 }),
+    logoId: integer('logo_id'),
     logoUrl: text('logo_url'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
@@ -108,6 +109,7 @@ export const products = pgTable('products', {
 export const productImages = pgTable('product_images', {
     id: uuid('id').primaryKey(),
     productId: uuid('product_id').notNull(),
+    mediaId: integer('media_id'),
     imageUrl: text('image_url').notNull(),
     isPrimary: boolean('is_primary').default(false),
     sortOrder: integer('sort_order').default(0),
@@ -196,6 +198,10 @@ export const payments = pgTable('payments', {
 /**
  * Hook function to add Supabase tables to Payload's schema.
  * Use this in postgresAdapter({ beforeSchemaInit: [supabaseSchemaHook] })
+ *
+ * IMPORTANT: Use keys that match Payload's tableNameMap (from createTableName).
+ * Payload maps collection slug (snake_case) -> table key. E.g. "product-images" -> "product_images".
+ * Using wrong keys causes "Cannot read properties of undefined (reading 'id')" in buildQuery.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const supabaseSchemaHook = ({ schema }: { schema: any; adapter: any }) => {
@@ -203,18 +209,18 @@ export const supabaseSchemaHook = ({ schema }: { schema: any; adapter: any }) =>
         ...schema,
         tables: {
             ...schema.tables,
-            // Register all existing Supabase tables to prevent conflicts
+            // Keys must match tableNameMap lookup (snake_case of slug/dbName)
             profiles,
             addresses,
             categories,
             products,
-            productImages,
+            product_images: productImages,
             inventory,
             orders,
-            orderItems,
-            cartItems,
+            order_items: orderItems,
+            cart_items: cartItems,
             payments,
-            profilesSessions,
+            profiles_sessions: profilesSessions,
         },
     }
 }

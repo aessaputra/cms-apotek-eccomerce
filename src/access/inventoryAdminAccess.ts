@@ -32,8 +32,7 @@ export const inventoryAdminAccess: Access = ({ req }) => {
     return false
   }
 
-  // Log successful access for audit purposes
-  req.payload.logger.info(`Inventory access granted to admin user ${user.id}`)
-
+  // Grant access without logging (success logs cause excessive noise when products
+  // with inventory are fetched in bulk; failures are logged above for audit)
   return true
 }

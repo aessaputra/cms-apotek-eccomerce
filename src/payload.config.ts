@@ -32,6 +32,16 @@ export default buildConfig({
   admin: {
     user: Users.slug,
   },
+  i18n: {
+    translations: {
+      en: {
+        general: {
+          // Friendlier empty state for Join/Relationship tables (no confusing "filters" when none applied)
+          noResults: 'No {{label}} yet. Use the button above to add.',
+        },
+      },
+    },
+  },
   lockDocuments: false,
   collections: [Users, CartItems, Categories, Media, Inventory, ProductImages],
   db: postgresAdapter({

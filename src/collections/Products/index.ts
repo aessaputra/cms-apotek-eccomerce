@@ -14,8 +14,12 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
   admin: {
     ...defaultCollection?.admin,
     defaultColumns: ['title', '_status'],
-
+    group: 'Catalog',
     useAsTitle: 'title',
+    pagination: {
+      defaultLimit: 20,
+      limits: [10, 20, 50, 100],
+    },
   },
   access: {
     create: adminOnly,
@@ -67,10 +71,24 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
               type: 'textarea',
               required: false,
             },
-
-
           ],
           label: 'Content',
+        },
+        {
+          fields: [
+            {
+              name: 'images',
+              type: 'join',
+              collection: 'product-images',
+              on: 'product',
+              admin: {
+                allowCreate: true,
+                defaultColumns: ['image_url', 'media', 'is_primary', 'sort_order'],
+                description: 'Add images by uploading directly here. Set primary image for listing. No Media menu needed.',
+              },
+            },
+          ],
+          label: 'Images',
         },
         {
           fields: [
@@ -78,7 +96,6 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
           ],
           label: 'Product Details',
         },
-
       ],
     },
     {
@@ -113,6 +130,19 @@ export const ProductsCollection: CollectionOverride = ({ defaultCollection }) =>
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/(^-|-$)/g, '')
             .substring(0, 100)
+        }
+        // Normalize variantTypes: Supabase uses integer id; client may send string/object
+        const raw = data?.variantTypes
+        if (Array.isArray(raw) && raw.length > 0) {
+          const normalized = raw
+            .map((v) => {
+              if (v == null) return null
+              const id = typeof v === 'object' && v && 'id' in v ? (v as { id: unknown }).id : v
+              const num = typeof id === 'string' ? parseInt(id, 10) : Number(id)
+              return Number.isNaN(num) || num < 1 ? null : num
+            })
+            .filter((id): id is number => id != null)
+          data!.variantTypes = normalized as unknown as typeof data.variantTypes
         }
         return data
       },

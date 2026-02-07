@@ -1,4 +1,5 @@
 import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
+import { s3Storage } from '@payloadcms/storage-s3'
 
 import { Plugin } from 'payload'
 
@@ -13,13 +14,31 @@ import { Addresses } from '@/collections/Addresses'
 import { OrdersCollection } from '@/collections/Orders'
 import { ProductsCollection } from '@/collections/Products'
 import { TransactionsCollection } from '@/collections/Transactions'
+import { VariantOptionsCollectionOverride } from '@/collections/VariantOptions'
+import { VariantTypesCollectionOverride } from '@/collections/VariantTypes'
 
 
 
 
 export const plugins: Plugin[] = [
-
-
+  // Supabase Storage via S3-compatible API
+  // @see https://payloadcms.com/docs/upload/storage-adapters
+  s3Storage({
+    enabled: Boolean(process.env.S3_ENDPOINT && process.env.S3_ACCESS_KEY_ID),
+    collections: {
+      media: true,
+    },
+    bucket: process.env.S3_BUCKET || 'uploads',
+    config: {
+      credentials: {
+        accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+        secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+      },
+      region: process.env.S3_REGION || 'auto',
+      endpoint: process.env.S3_ENDPOINT,
+      forcePathStyle: true,
+    },
+  }),
   ecommercePlugin({
     access: {
       adminOnlyFieldAccess,
@@ -45,6 +64,10 @@ export const plugins: Plugin[] = [
     },
     products: {
       productsCollectionOverride: ProductsCollection,
+      variants: {
+        variantOptionsCollectionOverride: VariantOptionsCollectionOverride,
+        variantTypesCollectionOverride: VariantTypesCollectionOverride,
+      },
     },
     orders: {
       ordersCollectionOverride: OrdersCollection,

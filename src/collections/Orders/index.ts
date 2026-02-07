@@ -11,6 +11,7 @@ export const OrdersCollection: CollectionOverride = ({ defaultCollection }) => (
   admin: {
     ...defaultCollection?.admin,
     defaultColumns: ['id', 'status', 'totalAmount', 'createdAt'],
+    group: 'Sales',
     useAsTitle: 'id',
   },
   access: {

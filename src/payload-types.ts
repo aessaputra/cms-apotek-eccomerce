@@ -96,6 +96,7 @@ export interface Config {
       options: 'variantOptions';
     };
     products: {
+      images: 'product-images';
       variants: 'variants';
     };
   };
@@ -260,6 +261,14 @@ export interface Product {
   name?: string | null;
   price: number;
   description?: string | null;
+  /**
+   * Add images by uploading directly here. Set primary image for listing. No Media menu needed.
+   */
+  images?: {
+    docs?: (string | ProductImage)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   inventory?: number | null;
   enableVariants?: boolean | null;
   variantTypes?: (string | VariantType)[] | null;
@@ -278,6 +287,70 @@ export interface Product {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-images".
+ */
+export interface ProductImage {
+  id: string;
+  /**
+   * The product this image belongs to
+   */
+  product: string | Product;
+  /**
+   * Upload image directly here — no need to go to Media menu
+   */
+  media?: (string | null) | Media;
+  /**
+   * Auto-synced from upload, or paste URL manually
+   */
+  image_url?: string | null;
+  /**
+   * Set as the main image for the product listing
+   */
+  is_primary?: boolean | null;
+  /**
+   * Order of display (lower numbers first)
+   */
+  sort_order?: number | null;
+  created_at?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: string;
+  alt: string;
+  caption?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * Define variant types (e.g. Pack Size, Strength) for products with variants
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "variantTypes".
  */
 export interface VariantType {
@@ -294,6 +367,8 @@ export interface VariantType {
   deletedAt?: string | null;
 }
 /**
+ * Options for variant types (e.g. Sachet, Box, 500mg)
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "variantOptions".
  */
@@ -342,7 +417,11 @@ export interface Category {
   name: string;
   slug?: string | null;
   /**
-   * URL of the category logo/icon image
+   * Upload logo directly here — no need to go to Media menu
+   */
+  logo?: (string | null) | Media;
+  /**
+   * Legacy: paste URL if not using upload. Auto-synced when logo is uploaded.
    */
   logo_url?: string | null;
   updatedAt: string;
@@ -387,6 +466,8 @@ export interface Address {
   createdAt: string;
 }
 /**
+ * Cart items are created by customers via the app. Admin can view, update, and delete for support.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "cart-items".
  */
@@ -403,40 +484,6 @@ export interface CartItem {
   quantity: number;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
- */
-export interface Media {
-  id: string;
-  alt: string;
-  caption?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
 }
 /**
  * Stock management per product
@@ -459,30 +506,6 @@ export interface Inventory {
    */
   low_stock_threshold?: number | null;
   updated_at?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "product-images".
- */
-export interface ProductImage {
-  id: string;
-  /**
-   * The product this image belongs to
-   */
-  product: string | Product;
-  /**
-   * Full URL of the product image
-   */
-  image_url: string;
-  /**
-   * Set as the main image for the product listing
-   */
-  is_primary?: boolean | null;
-  /**
-   * Order of display (lower numbers first)
-   */
-  sort_order?: number | null;
-  created_at?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -589,14 +612,6 @@ export interface PayloadLockedDocument {
         value: string | Variant;
       } | null)
     | ({
-        relationTo: 'variantTypes';
-        value: string | VariantType;
-      } | null)
-    | ({
-        relationTo: 'variantOptions';
-        value: string | VariantOption;
-      } | null)
-    | ({
         relationTo: 'carts';
         value: string | Cart;
       } | null)
@@ -692,6 +707,7 @@ export interface CartItemsSelect<T extends boolean = true> {
 export interface CategoriesSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
+  logo?: T;
   logo_url?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -731,6 +747,7 @@ export interface InventorySelect<T extends boolean = true> {
  */
 export interface ProductImagesSelect<T extends boolean = true> {
   product?: T;
+  media?: T;
   image_url?: T;
   is_primary?: T;
   sort_order?: T;
@@ -802,6 +819,7 @@ export interface ProductsSelect<T extends boolean = true> {
   name?: T;
   price?: T;
   description?: T;
+  images?: T;
   inventory?: T;
   enableVariants?: T;
   variantTypes?: T;

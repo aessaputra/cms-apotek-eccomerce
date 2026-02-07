@@ -11,7 +11,13 @@ import type { CollectionAfterReadHook } from 'payload'
 export const calculateProductAvailability: CollectionAfterReadHook = async ({
   doc,
   req,
+  findMany,
 }) => {
+  // Skip for list view – availability not shown in columns, avoids N+1 per product
+  if (findMany) {
+    return doc
+  }
+
   try {
     // Get the product ID
     const productId = doc.id
@@ -36,7 +42,7 @@ export const calculateProductAvailability: CollectionAfterReadHook = async ({
       date: new Date().toISOString().split('T')[0], // Include date to invalidate daily
     })
 
-    // Try to get cached availability first
+    // Try to get cached availability first (in-memory cache)
     const cachedAvailability = productCaching.getProduct(cacheKey)
     if (cachedAvailability) {
       return {

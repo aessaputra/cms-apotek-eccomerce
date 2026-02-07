@@ -8,17 +8,25 @@ import {
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import { adminOnly } from '@/access/adminOnly'
+
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export const Media: CollectionConfig = {
   lockDocuments: false,
   admin: {
-    group: 'Content',
+    group: 'Media',
+    hidden: true, // Upload inline in Products (Images tab) and Categories (Logo) — no separate Media menu
   },
   slug: 'media',
+  // Media table uses integer id in Supabase; override global idType: 'uuid' for this collection
+  customIDType: 'number',
   access: {
     read: () => true,
+    create: adminOnly,
+    update: adminOnly,
+    delete: adminOnly,
   },
   fields: [
     {
@@ -38,5 +46,6 @@ export const Media: CollectionConfig = {
   ],
   upload: {
     staticDir: path.resolve(dirname, '../../public/media'),
+    mimeTypes: ['image/*'], // Restrict to images (Categories logo, ProductImages)
   },
 }

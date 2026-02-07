@@ -61,6 +61,7 @@ export const TransactionsCollection: CollectionOverride = ({ defaultCollection }
     dbName: 'payments', // Strict mapping to 'payments' table as per schema
     admin: {
         ...defaultCollection.admin,
+        group: 'Payments',
         useAsTitle: 'id',
     },
     access: {

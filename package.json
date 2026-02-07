@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
-    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev --turbopack",
     "dev:prod": "cross-env NODE_OPTIONS=--no-deprecation rm -rf .next && pnpm build && pnpm start",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
@@ -24,6 +24,7 @@
   "dependencies": {
     "@payloadcms/admin-bar": "3.74.0",
     "@payloadcms/db-postgres": "3.74.0",
+    "@payloadcms/storage-s3": "3.74.0",
     "@payloadcms/next": "3.74.0",
     "@payloadcms/plugin-ecommerce": "3.74.0",
     "@payloadcms/richtext-lexical": "3.74.0",

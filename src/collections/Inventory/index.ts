@@ -18,8 +18,12 @@ export const Inventory: CollectionConfig = {
   admin: {
     useAsTitle: 'id',
     defaultColumns: ['product', 'quantity', 'low_stock_threshold', 'updated_at'],
-    group: 'Pharmacy Management',
+    group: 'Inventory',
     description: 'Stock management per product',
+    pagination: {
+      defaultLimit: 20,
+      limits: [10, 20, 50, 100],
+    },
   },
   access: {
     create: inventoryAdminAccess,

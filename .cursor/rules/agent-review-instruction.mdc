@@ -1,0 +1,78 @@
+---
+description: Instruction for agents conducting code review on Apotek E-commerce (Payload CMS + Supabase)
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Agent Review Instruction
+
+When conducting code review on this project, follow this instruction. Use with `.agent/skills/code-review-checklist` for the full process.
+
+## Project Context
+
+- **Stack**: Payload CMS 3.x, Supabase PostgreSQL, Next.js
+- **DB**: `idType: 'uuid'` global, but some collections use `customIDType: 'number'` (Media, VariantTypes, VariantOptions)
+- **Schema**: `src/db/supabase-schema.ts` + `beforeSchemaInit` hook register tables; keys must match Payload `tableNameMap`
+
+---
+
+## Project-Specific Review Checklist
+
+### 1. Payload + Supabase ID Mismatches
+
+| Check | Why |
+|-------|-----|
+| Collections with integer IDs (media, variant_types, variant_options) use `customIDType: 'number'` | Supabase tables use serial/integer; default UUID validation fails |
+| Relationship fields to `media` or `variantTypes` have custom `validate` + `beforeValidate` | Client may send string or object; normalize to number |
+| `supabaseSchemaHook` uses `product_images`, `order_items`, `cart_items`, `profiles_sessions` as keys | `tableNameMap` expects snake_case; wrong keys cause "undefined reading 'id'" |
+
+### 2. Security (Critical)
+
+- [ ] `overrideAccess: false` when passing `user` to Local API
+- [ ] `req` passed to nested operations in hooks (transaction safety)
+- [ ] `context.skipHooks` used to prevent infinite hook loops
+- [ ] No hardcoded secrets; use env vars
+
+### 3. Schema & Migrations
+
+- [ ] New tables use Supabase MCP `list_tables` as source of truth
+- [ ] `supabase-schema.ts` aligned with DB
+- [ ] DDL via `mcp_supabase_apply_migration`
+- [ ] Version/draft tables use `parent_id` type matching parent `id` (e.g. `_variants_v_rels.parent_id` = uuid)
+
+### 4. Collections & Fields
+
+- [ ] Upload/relationship to `media` uses `media` field name (maps to `media_id`) or `dbName: 'media_id'`
+- [ ] `generate:types` run after schema changes
+- [ ] Ecommerce plugin overrides (Products, VariantTypes, VariantOptions) use `CollectionOverride` pattern
+
+### 5. Performance
+
+- [ ] `afterRead` hooks skip expensive work when `findMany` (list view)
+- [ ] `depth` and `select` used to limit over-fetching
+- [ ] No N+1 in `afterRead` hooks
+
+---
+
+## Review Output Format
+
+```
+## Strengths
+- [List what was done well]
+
+## Issues
+| Severity | Location | Issue | Suggestion |
+|----------|----------|-------|------------|
+| Critical/Important/Minor | file:line | Description | How to fix |
+
+## Assessment
+Ready to proceed / Fix before merge / Needs discussion
+```
+
+---
+
+## Quick Reference
+
+- **Schema source**: `mcp_supabase_list_tables`, `src/db/supabase-schema.ts`
+- **Rules**: `.agent/rules/` (security-critical, supabase-integration, etc.)
+- **Validate**: `pnpm run generate:types`, `tsc --noEmit`
