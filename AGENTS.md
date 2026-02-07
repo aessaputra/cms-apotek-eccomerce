@@ -1121,12 +1121,6 @@ export const myPlugin =
 9. **SQLite Transactions**: Disabled by default, enable with `transactionOptions: {}`
 10. **Point Fields**: Not supported in SQLite
 
-## Agent Review
-
-When conducting code review, use `.cursor/rules/agent-review-instruction.mdc` plus `.agent/skills/code-review-checklist`. The instruction includes project-specific checks for Payload + Supabase (ID mismatches, schema table keys, security, etc.).
-
----
-
 ## Additional Context Files
 
 For deeper exploration of specific topics, refer to the context files located in `.agent/rules/`:
