@@ -39,7 +39,7 @@ export default buildConfig({
   admin: {
     user: Admins.slug, // Admins only; customers use Customer App (Supabase Auth)
     components: {
-      actions: ['/components/LogoutButton'],
+      actions: ['/src/components/LogoutButton'],
     },
   },
   i18n: {

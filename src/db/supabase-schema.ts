@@ -154,8 +154,8 @@ export const productImages = pgTable('product_images', {
 export const inventory = pgTable('inventory', {
     id: uuid('id').primaryKey(),
     productId: uuid('product_id').notNull(),
-    quantity: integer('quantity').default(0),
-    lowStockThreshold: integer('low_stock_threshold').default(10),
+    quantity: numeric('quantity', { precision: 12, scale: 2 }).default(0),
+    lowStockThreshold: numeric('low_stock_threshold', { precision: 12, scale: 2 }).default(10),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 })
 
@@ -170,6 +170,7 @@ export const orders = pgTable('orders', {
     id: uuid('id').primaryKey(),
     user_id: uuid('user_id'), // orderedBy dbName - match Payload Where path
     customerId: uuid('customer_id'), // Payload ecommerce plugin compatibility
+    orderedById: uuid('ordered_by_id'), // Sync with user_id via trigger
     addressId: uuid('address_id'),
     totalAmount: numeric('total_amount', { precision: 12, scale: 2 }),
     status: varchar('status', { length: 30 }).default('pending'),

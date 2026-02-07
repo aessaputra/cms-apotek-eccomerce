@@ -12,9 +12,10 @@ import type { Access } from 'payload'
 export const inventoryAdminAccess: Access = ({ req }) => {
   const { user } = req
 
-  // No user means no access
+  // No user means no access (expected when products are fetched publicly or during
+  // initial load before session; access correctly denies – use debug to avoid noise)
   if (!user) {
-    req.payload.logger.warn('Inventory access attempted without authentication')
+    req.payload.logger.debug('Inventory access attempted without authentication')
     return false
   }
 
