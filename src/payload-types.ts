@@ -428,6 +428,8 @@ export interface Category {
   createdAt: string;
 }
 /**
+ * Read-only. Customers manage addresses in the mobile app.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "addresses".
  */

@@ -1,4 +1,4 @@
-import { adminOrAddressOwner } from '@/access/adminOrAddressOwner'
+import { addressAdminReadOnlyAccess } from '@/access/addressAdminReadOnlyAccess'
 import type { CollectionConfig } from 'payload'
 import {
   ensureUniqueDefaultAddress,
@@ -9,6 +9,9 @@ import {
 /**
  * Addresses collection - Strict schema match with Supabase 'addresses' table
  * DB columns: id, user_id, label, recipient_name, phone, address_line, city, postal_code, is_default, created_at, updated_at
+ *
+ * Best practice: Customer-owned data. Admin is read-only (view for support/order management).
+ * Customers manage addresses via React Native frontend. Supabase RLS enforces user_id = auth.uid() for mobile app.
  */
 export const Addresses: CollectionConfig = {
   slug: 'addresses',
@@ -18,13 +21,9 @@ export const Addresses: CollectionConfig = {
     useAsTitle: 'label',
     defaultColumns: ['label', 'recipient_name', 'city', 'is_default'],
     group: 'Users',
+    description: 'Read-only. Customers manage addresses in the mobile app.',
   },
-  access: {
-    create: ({ req }) => Boolean(req?.user),
-    read: adminOrAddressOwner,
-    update: adminOrAddressOwner,
-    delete: adminOrAddressOwner,
-  },
+  access: addressAdminReadOnlyAccess,
   hooks: {
     beforeValidate: [validateAddressData],
     beforeChange: [ensureUniqueDefaultAddress],
@@ -36,7 +35,7 @@ export const Addresses: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       required: true,
-      // Maps to user_id in Supabase
+      dbName: 'user_id', // Maps to Supabase addresses.user_id
       admin: {
         condition: ({ req }) => req?.user?.role === 'admin',
       },

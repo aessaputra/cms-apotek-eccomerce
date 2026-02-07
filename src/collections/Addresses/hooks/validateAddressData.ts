@@ -38,16 +38,18 @@ export const validateAddressData: CollectionBeforeValidateHook = async ({
     }
   }
 
-  // Ensure label is unique per customer (only for create operations)
-  if (data.label && data.customer && operation === 'create') {
-    const customerId = typeof data.customer === 'object' ? data.customer.id : data.customer
+  // Ensure label is unique per user (only for create operations)
+  if (data.label && data.user && operation === 'create') {
+    const userId = typeof data.user === 'object' && data.user && 'id' in data.user
+      ? (data.user as { id: string }).id
+      : data.user
 
     try {
       const existingAddresses = await req.payload.find({
         collection: 'addresses',
         where: {
           and: [
-            { customer: { equals: customerId } },
+            { user: { equals: userId } },
             { label: { equals: data.label } },
           ],
         },

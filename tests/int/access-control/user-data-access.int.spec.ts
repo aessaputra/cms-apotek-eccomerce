@@ -151,6 +151,46 @@ describe('User Data Access Control', () => {
       expect(addressIds).toContain(customer2Address.id)
     })
 
+    it('should prevent admins from creating addresses', async () => {
+      await expect(
+        payload.create({
+          collection: 'addresses',
+          data: {
+            user: adminUser.id,
+            label: 'Admin Created',
+            recipient_name: 'Admin',
+            address_line: '123 Admin St',
+            city: 'Jakarta',
+          },
+          user: adminUser,
+          overrideAccess: false,
+        })
+      ).rejects.toThrow()
+    })
+
+    it('should prevent admins from updating addresses', async () => {
+      await expect(
+        payload.update({
+          collection: 'addresses',
+          id: customer1Address.id,
+          data: { label: 'Admin Updated' },
+          user: adminUser,
+          overrideAccess: false,
+        })
+      ).rejects.toThrow()
+    })
+
+    it('should prevent admins from deleting addresses', async () => {
+      await expect(
+        payload.delete({
+          collection: 'addresses',
+          id: customer1Address.id,
+          user: adminUser,
+          overrideAccess: false,
+        })
+      ).rejects.toThrow()
+    })
+
     it('should prevent customers from updating other customers\' addresses', async () => {
       await expect(
         payload.update({
