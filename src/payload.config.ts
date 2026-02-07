@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { resendAdapter } from '@payloadcms/email-resend'
 import {
   BoldFeature,
   EXPERIMENTAL_TableFeature,
@@ -14,6 +15,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
+import { Admins } from '@/collections/Admins'
 import { CartItems } from '@/collections/CartItems'
 import { Categories } from '@/collections/Categories'
 import { Inventory } from '@/collections/Inventory'
@@ -29,8 +31,13 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 export default buildConfig({
+  email: resendAdapter({
+    defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'noreply@payloadcms.com',
+    defaultFromName: process.env.EMAIL_FROM_NAME || 'Apotek CMS',
+    apiKey: process.env.RESEND_API_KEY || '',
+  }),
   admin: {
-    user: Users.slug,
+    user: Admins.slug, // Admins only; customers use Customer App (Supabase Auth)
   },
   i18n: {
     translations: {
@@ -43,7 +50,7 @@ export default buildConfig({
     },
   },
   lockDocuments: false,
-  collections: [Users, CartItems, Categories, Media, Inventory, ProductImages],
+  collections: [Admins, Users, CartItems, Categories, Media, Inventory, ProductImages],
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',

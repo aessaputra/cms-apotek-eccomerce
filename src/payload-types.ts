@@ -63,10 +63,11 @@ export type SupportedTimezones =
 
 export interface Config {
   auth: {
-    users: UserAuthOperations;
+    admins: AdminAuthOperations;
   };
   blocks: {};
   collections: {
+    admins: Admin;
     users: User;
     'cart-items': CartItem;
     categories: Category;
@@ -101,6 +102,7 @@ export interface Config {
     };
   };
   collectionsSelect: {
+    admins: AdminsSelect<false> | AdminsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'cart-items': CartItemsSelect<false> | CartItemsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
@@ -127,8 +129,8 @@ export interface Config {
   globals: {};
   globalsSelect: {};
   locale: null;
-  user: User & {
-    collection: 'users';
+  user: Admin & {
+    collection: 'admins';
   };
   jobs: {
     tasks: unknown;
@@ -151,7 +153,7 @@ export interface Config {
     };
   };
 }
-export interface UserAuthOperations {
+export interface AdminAuthOperations {
   forgotPassword: {
     email: string;
     password: string;
@@ -170,17 +172,64 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * Staff accounts for Admin Panel access. Customers use the mobile app.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admins".
+ */
+export interface Admin {
+  id: string;
+  /**
+   * Display name for admin staff
+   */
+  full_name?: string | null;
+  /**
+   * Contact number for staff
+   */
+  phone?: string | null;
+  /**
+   * Always admin for Admins collection
+   */
+  role: 'admin';
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+}
+/**
+ * Customer profiles. Managed via Supabase Auth in mobile app. View/manage from Admin Panel.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
   id: string;
+  /**
+   * Customer email (synced from Supabase Auth)
+   */
+  email: string;
   full_name?: string | null;
   /**
    * Primary phone number for order notifications
    */
   phone: string;
-  role?: ('admin' | 'customer') | null;
+  /**
+   * Always customer. Staff use Admins collection.
+   */
+  role: 'customer';
   orders?: {
     docs?: (string | Order)[];
     hasNextPage?: boolean;
@@ -201,21 +250,6 @@ export interface User {
   };
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -618,8 +652,8 @@ export interface PayloadLockedDocument {
       } | null);
   globalSlug?: string | null;
   user: {
-    relationTo: 'users';
-    value: string | User;
+    relationTo: 'admins';
+    value: string | Admin;
   };
   updatedAt: string;
   createdAt: string;
@@ -631,8 +665,8 @@ export interface PayloadLockedDocument {
 export interface PayloadPreference {
   id: string;
   user: {
-    relationTo: 'users';
-    value: string | User;
+    relationTo: 'admins';
+    value: string | Admin;
   };
   key?: string | null;
   value?:
@@ -660,15 +694,12 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
+ * via the `definition` "admins_select".
  */
-export interface UsersSelect<T extends boolean = true> {
+export interface AdminsSelect<T extends boolean = true> {
   full_name?: T;
   phone?: T;
   role?: T;
-  orders?: T;
-  cart_items?: T;
-  addresses?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -685,6 +716,21 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  email?: T;
+  full_name?: T;
+  phone?: T;
+  role?: T;
+  orders?: T;
+  cart_items?: T;
+  addresses?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

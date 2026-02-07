@@ -62,7 +62,39 @@ export const addresses = pgTable('addresses', {
 })
 
 /**
- * Payload CMS Sessions
+ * Admins - Staff only, for Payload Admin Panel login
+ * Customers use profiles (Users collection); never login to Admin Panel
+ */
+export const admins = pgTable('admins', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    email: varchar('email', { length: 255 }).notNull(),
+    fullName: text('full_name'),
+    phone: varchar('phone', { length: 50 }),
+    role: varchar('role', { length: 20 }).default('admin'),
+    salt: text('salt'),
+    hash: text('hash'),
+    resetPasswordToken: varchar('reset_password_token', { length: 255 }),
+    resetPasswordExpiration: timestamp('reset_password_expiration', { withTimezone: true }),
+    loginAttempts: integer('login_attempts').default(0),
+    lockUntil: timestamp('lock_until', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+})
+
+/**
+ * Admin sessions - Payload admin panel sessions
+ */
+export const adminsSessions = pgTable('admins_sessions', {
+    id: uuid('id').primaryKey().defaultRandom(),
+    parentId: uuid('_parent_id').references(() => admins.id, { onDelete: 'cascade' }),
+    order: integer('_order').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
+})
+
+/**
+ * Payload CMS Sessions (legacy - profiles when Users had auth)
  */
 export const profilesSessions = pgTable('profiles_sessions', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -234,6 +266,8 @@ export const supabaseSchemaHook = ({ schema }: { schema: any; adapter: any }) =>
             payments,
             payments_items: paymentsItems,
             profiles_sessions: profilesSessions,
+            admins,
+            admins_sessions: adminsSessions,
         },
     }
 }

@@ -22,7 +22,8 @@ This repository contains the **Payload CMS admin panel** for Apotek E-commerce.
 ## Database Schema
 
 Core business tables (non-exhaustive):
-- `profiles` - User profiles (admin/customer)
+- `admins` - Admin staff (Payload Auth, Admin Panel login)
+- `profiles` - Customer profiles (Supabase Auth, no Payload login)
 - `addresses` - Shipping addresses
 - `categories` - Product categories
 - `products` - Product listings

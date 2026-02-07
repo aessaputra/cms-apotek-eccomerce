@@ -15,7 +15,12 @@ This repository contains the **Payload CMS admin panel** for the Apotek E-commer
 
 ### Database Schema
 
-Use Supabase MCP (e.g. `list_tables`) as the source of truth and keep `src/db/supabase-schema.ts` aligned. Core tables: `profiles`, `addresses`, `categories`, `products`, `product_images`, `inventory`, `orders`, `order_items`, `cart_items`, `payments`.
+Use Supabase MCP (e.g. `list_tables`) as the source of truth and keep `src/db/supabase-schema.ts` aligned. Core tables: `admins`, `profiles`, `addresses`, `categories`, `products`, `product_images`, `inventory`, `orders`, `order_items`, `cart_items`, `payments`.
+
+### Auth Architecture (Option B: Separate Collections)
+
+- **Admins** (`admins` table): Payload Auth, Admin Panel login only. `admin.user: 'admins'` in config.
+- **Users** (`profiles` table): Customer profiles, no Payload auth. Synced from Supabase Auth via mobile app.
 
 ### Supabase Integration
 
@@ -76,6 +81,7 @@ import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
+import { Admins } from '@/collections/Admins'
 import { CartItems } from '@/collections/CartItems'
 import { Categories } from '@/collections/Categories'
 import { Inventory } from '@/collections/Inventory'
@@ -91,9 +97,9 @@ const dirname = path.dirname(filename)
 
 export default buildConfig({
   admin: {
-    user: Users.slug,
+    user: Admins.slug, // Admin Panel login uses Admins; Users = customers only
   },
-  collections: [Users, CartItems, Categories, Media, Inventory, ProductImages],
+  collections: [Admins, Users, CartItems, Categories, Media, Inventory, ProductImages],
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',

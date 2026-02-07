@@ -6,6 +6,7 @@ import { Plugin } from 'payload'
 import { midtransAdapter } from '@/payments/midtrans'
 
 import { adminOnlyFieldAccess } from '@/access/adminOnlyFieldAccess'
+import { fixPreferencesAccess } from '@/plugins/fixPreferencesAccess'
 import { adminOrPublishedStatus } from '@/access/adminOrPublishedStatus'
 import { customerOnlyFieldAccess } from '@/access/customerOnlyFieldAccess'
 import { isAdmin } from '@/access/isAdmin'
@@ -21,6 +22,8 @@ import { VariantTypesCollectionOverride } from '@/collections/VariantTypes'
 
 
 export const plugins: Plugin[] = [
+  // Fix: user.relationTo QueryError on admin load (single auth collection)
+  fixPreferencesAccess,
   // Supabase Storage via S3-compatible API
   // @see https://payloadcms.com/docs/upload/storage-adapters
   s3Storage({

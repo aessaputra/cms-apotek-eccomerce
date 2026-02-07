@@ -3,18 +3,20 @@ import type { CollectionConfig } from 'payload'
 import { adminOnly } from '@/access/adminOnly'
 import { adminOnlyFieldAccess } from '@/access/adminOnlyFieldAccess'
 import { adminOrSelf } from '@/access/adminOrSelf'
-import { publicAccess } from '@/access/publicAccess'
 import { checkRole } from '@/access/utilities'
 
-import { ensureFirstUserIsAdmin } from './hooks/ensureFirstUserIsAdmin'
-
+/**
+ * Users (profiles) - Customer data only. No Payload auth.
+ * Customers authenticate via Customer App (Supabase Auth).
+ * Admin Panel login uses Admins collection.
+ */
 export const Users: CollectionConfig = {
   slug: 'users',
   dbName: 'profiles', // Strict mapping to Supabase 'profiles' table
   lockDocuments: false,
   access: {
     admin: ({ req: { user } }) => checkRole(['admin'], user),
-    create: publicAccess,
+    create: adminOnly, // Customers created via Supabase Auth sync; admin can add manually
     delete: adminOnly,
     read: adminOrSelf,
     update: adminOrSelf,
@@ -23,12 +25,18 @@ export const Users: CollectionConfig = {
     group: 'Users',
     defaultColumns: ['full_name', 'email', 'role'],
     useAsTitle: 'full_name',
+    description: 'Customer profiles. Managed via Supabase Auth in mobile app. View/manage from Admin Panel.',
   },
-  auth: {
-    tokenExpiration: 1209600,
-  },
-  // Note: is_active field removed to match DB schema (profiles table has no is_active column)
   fields: [
+    {
+      name: 'email',
+      type: 'email',
+      required: true,
+      unique: true,
+      admin: {
+        description: 'Customer email (synced from Supabase Auth)',
+      },
+    },
     {
       name: 'full_name', // Matches schema 'full_name'
       label: 'Full Name',
@@ -57,28 +65,25 @@ export const Users: CollectionConfig = {
       },
     },
     {
-      name: 'role', // Matches schema 'role' text
+      name: 'role', // Matches schema 'role' - always 'customer' for this collection
       type: 'select',
       access: {
         create: adminOnlyFieldAccess,
         read: adminOnlyFieldAccess,
         update: adminOnlyFieldAccess,
       },
-      defaultValue: 'customer',
-      // hasMany: true, // Schema says 'role text', single value.
-      hooks: {
-        beforeChange: [ensureFirstUserIsAdmin],
+      admin: {
+        description: 'Always customer. Staff use Admins collection.',
+        readOnly: true,
       },
+      defaultValue: 'customer',
       options: [
         {
-          label: 'admin',
-          value: 'admin',
-        },
-        {
-          label: 'customer',
+          label: 'Customer',
           value: 'customer',
         },
       ],
+      required: true,
       saveToJWT: true,
     },
     {

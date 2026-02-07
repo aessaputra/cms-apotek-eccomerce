@@ -28,7 +28,12 @@ import {
     lowStockReport,
     salesReport,
 } from './inventory-reports'
-
+import {
+    checkBulkStock,
+    checkProductStock,
+    stockAlerts,
+    stockMonitor,
+} from './stock-monitoring'
 
 export const pharmacyEndpoints = [
     // Test endpoint to verify endpoints are working
@@ -61,15 +66,16 @@ export const pharmacyEndpoints = [
     inventoryStatusReportEndpoint,
     financialReport,
 
-    // Data integrity and health check endpoints
+    // Stock monitoring endpoints
+    checkProductStock,
+    checkBulkStock,
+    stockMonitor,
+    stockAlerts,
+
+    // Data integrity and health check endpoints (optional - uncomment to enable)
     // dataIntegrityCheckEndpoint,
     // quickHealthCheckEndpoint,
     // fixDataIssuesEndpoint,
-
-    // Note: Other endpoints are commented out due to import path issues
-    // They can be uncommented once the utility imports are resolved
-    // The endpoint files are created and ready to use:
-    // - stock-monitoring.ts (checkProductStock, checkBulkStock, stockMonitor, stockAlerts)  
 ]
 
 // Individual endpoint exports for direct use
