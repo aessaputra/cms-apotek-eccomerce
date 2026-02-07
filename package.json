@@ -25,7 +25,7 @@
   "dependencies": {
     "@payloadcms/admin-bar": "3.74.0",
     "@payloadcms/db-postgres": "3.74.0",
-    "@payloadcms/email-resend": "^3.75.0",
+    "@payloadcms/email-resend": "3.74.0",
     "@payloadcms/next": "3.74.0",
     "@payloadcms/plugin-ecommerce": "3.74.0",
     "@payloadcms/richtext-lexical": "3.74.0",
